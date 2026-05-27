@@ -1,0 +1,7 @@
+{
+  "name": "forge",
+  "displayName": "Forge",
+  "version": "1.0.0",
+  "description": "Take a software idea from concept to a verified, documented implementation through one meticulous, agentic pipeline: a depth-scaled interview, grounded research, an ultra-granular plan, a verification-gated build, optional tests, a security pass, and a final bug sweep.",
+  "author": { "name": "Rhys Ellwood" }
+}

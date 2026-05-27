@@ -1,0 +1,12 @@
+{
+  "name": "forge-marketplace",
+  "owner": { "name": "Rhys Ellwood" },
+  "plugins": [
+    {
+      "name": "forge",
+      "source": "./",
+      "description": "Idea-to-verified-implementation pipeline for Claude Code — one skill plus four dedicated subagents.",
+      "version": "1.0.0"
+    }
+  ]
+}
