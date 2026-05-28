@@ -58,7 +58,7 @@ On tools without subagents or a choice UI, Forge degrades gracefully — it does
 ### Quickest — clone and run the installer
 
 ```bash
-git clone https://github.com/rhysellwood/forge.git
+git clone https://github.com/REllwood/Forge.git
 cd forge
 ./install.sh            # auto-detects installed tools
 # or target one:  ./install.sh claude | codex | cursor | all
@@ -68,7 +68,7 @@ cd forge
 
 **Option A — plugin (recommended):**
 ```
-/plugin marketplace add rhysellwood/forge
+/plugin marketplace add REllwood/Forge
 /plugin install forge@forge-marketplace
 ```
 
