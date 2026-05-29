@@ -1,6 +1,6 @@
 # Forge
 
-**Take a software idea from concept to a verified, documented implementation — in one meticulous, agentic pipeline.**
+**Take a software idea from concept to a verified, documented implementation in one meticulous, agentic pipeline.**
 
 Forge isn't an app you run. It's a set of instructions your AI coding assistant follows — a complete engineering workflow with the conversational feel of plan mode. It interviews you until there are no grey areas, grounds every assumption in current reality, writes an ultra-granular plan, then builds it autonomously: verifying **every** step, running a security pass, and finishing with a bug-and-logic sweep — documenting the whole thing as it goes.
 
