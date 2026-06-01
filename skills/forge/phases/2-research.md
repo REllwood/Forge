@@ -29,8 +29,11 @@ From SPEC, enumerate what must be verified. Typically:
 Delegate to subagents so the main context stays clean. Launch independent investigations
 **concurrently** (one message, multiple `Agent` calls):
 
-- **Existing-codebase research** → `Explore` agent: "find how X is done here, conventions, reusable
-  modules, where new code should live." (Skip if greenfield.)
+- **Brownfield comprehension (lead with this)** → spawn `forge-cartographer` to map the existing system
+  and write `MAP.md` (template below): architecture, conventions, the real build/test/run commands,
+  fragile / high-blast-radius areas, and the **test baseline** (does the suite pass now?). Skip if
+  greenfield. The rest of research is then scoped to the existing stack + the change. See
+  `references/brownfield.md`.
 - **External/tech research** → `forge-researcher` agent(s), one per cluster of related questions (falls
   back to `general-purpose` if unavailable). Each verifies versions/deprecations/feasibility against
   **primary sources** (official docs, changelogs, release notes, GitHub issues, advisories) and returns
@@ -97,6 +100,36 @@ Update FORGE.md: check ②, Status → `architecture`, refresh Current position.
 
 ## Sources
 - {url — what it confirmed — date checked}
+```
+
+**Brownfield only —** the orchestrator writes `MAP.md` from the cartographer's report:
+
+```markdown
+# MAP — {project}  (brownfield)
+
+## Architecture & layout
+{modules, boundaries, entry points, data flow}
+
+## Stack & conventions
+{language/framework versions, patterns, naming, error handling, test style, where things live}
+
+## Commands (verified)
+- install / build / run / test / lint: {…}
+
+## Test baseline
+{does the suite pass right now? coverage around the target}
+
+## Domain & data
+{core entities, stores, schemas/migrations}
+
+## ⚠ Fragile / high-blast-radius areas
+- {path — why it's risky to touch}
+
+## Where the change goes
+{target location · what it touches · blast radius}
+
+## Behaviour to pin (characterization tests)
+- {current behaviour to lock before changing}
 ```
 
 **Exit criteria:** RESEARCH.md written, every SPEC assumption either confirmed or revised, findings gate

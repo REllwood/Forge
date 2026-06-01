@@ -21,6 +21,10 @@ layer — the thing the build panel reviews and signs off as a whole. Order slic
   (layers, boundaries, the data layer) and — for UI — sets up the `DESIGN.md` tokens + base components,
   producing a **walking skeleton** that runs end-to-end (even if it does almost nothing). Every later
   slice then builds on something verified-working.
+- **Brownfield:** there's no skeleton to scaffold — the foundational slice instead **confirms a green test
+  baseline and writes characterization tests** around the target so regressions are detectable. Slices are
+  change-deltas; tag each with **blast radius** and default a notch higher on risk. See
+  `references/brownfield.md`.
 - **Right-sized slices.** Each slice should be implementable and reviewable on its own. **Depth controls
   thinness:** `quick` = coarser slices; `deep` = thin slices close to per-step (see
   `references/engineering-flow.md`).

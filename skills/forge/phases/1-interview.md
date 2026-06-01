@@ -21,6 +21,14 @@ Before asking anything, look around so your questions are informed, not generic:
 - Restate the idea in one sentence and infer the obvious (form factor, likely stack) so you can ASK
   about the non-obvious instead of wasting questions.
 
+## Mode — greenfield or brownfield
+
+If the repo already holds substantial source (not just an empty dir or a bare `.git`), this is a
+**brownfield** build — confirm with the user, set `Mode: brownfield` in FORGE.md, and follow
+`references/brownfield.md` through every phase. Brownfield reframes the interview: ask **what to add /
+change / fix**, the **target area**, the change's **success criteria**, and — critically — **what must NOT
+change** (public contracts, behaviour, performance). Otherwise it's **greenfield** (the default flow below).
+
 ## Version control & GitHub — settle this first
 
 Before the main interview, ask (via `AskUserQuestion`) how to handle source control:

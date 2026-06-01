@@ -11,6 +11,10 @@ before the shape is sound; this phase is where that shape is decided.
 > `references/standards.md`) and **Ground everything in reality** (design around the versions/APIs
 > verified in research, not assumptions).
 
+**Brownfield:** *document then delta* — summarise the existing architecture from `MAP.md`, then design the
+change to **fit** it (boundaries honoured, no parallel patterns); keep ADRs and the threat model scoped to
+the change + its blast radius. See `references/brownfield.md`.
+
 ---
 
 ## 1. Design the system

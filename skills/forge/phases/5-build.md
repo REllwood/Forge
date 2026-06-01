@@ -34,6 +34,11 @@ Honour the VCS decision recorded in SPEC:
 - If `gh` is unavailable/unauthenticated, fall back to local commits and tell the user how to add the
   remote later.
 
+**Brownfield:** before the first change, run the existing suite and record the **baseline**; every panel
+then runs the **full existing suite**, and the reviewer explicitly checks *"did this break an existing
+contract / caller / behaviour?"* A broken baseline is a stop, not a deviation. See
+`references/brownfield.md`.
+
 ## The per-slice loop (repeat for every slice in the manifest, in dependency order)
 
 Size the panel to each slice's **risk class × depth** (`references/engineering-flow.md`).

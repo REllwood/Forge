@@ -12,6 +12,9 @@ intent (SPEC success criteria) and to what could break (edge cases from research
 tests), `.forge/RESEARCH.md` (gotchas), `.forge/ARCHITECTURE.md` (the seams worth integration-testing),
 the tests decision recorded in the plan.
 
+> **Brownfield:** use the existing framework/conventions; add **characterization tests** for touched legacy
+> code that lacked them, and keep the baseline green. See `references/brownfield.md`.
+
 ---
 
 ## Steps

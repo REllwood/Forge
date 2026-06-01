@@ -12,6 +12,9 @@ out.
 > irreversible action here is a **confirm-first** stop (SKILL.md `<autonomy>`), even under a standing push
 > authorization.
 
+> **Brownfield:** detect and reuse the project's **existing** deploy path / CI rather than inventing one;
+> match its release conventions. See `references/brownfield.md`.
+
 ---
 
 ## 1. Confirm target & prerequisites

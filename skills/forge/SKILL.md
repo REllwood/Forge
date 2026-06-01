@@ -118,6 +118,7 @@ every build fully documented and resumable.
   FORGE.md       ← manifest + state machine pointer (single source of truth for "where are we")
   SPEC.md        ← locked decisions from the interview
   RESEARCH.md    ← grounded findings, version pins, gotchas, resolved forks
+  MAP.md         ← reverse-engineered map of an existing codebase (brownfield only)
   ARCHITECTURE.md← system design: boundaries, data model, contracts, ADRs, threat model
   DESIGN.md      ← lead designer's direction (UI builds): tokens, layout, every state
   PLAN.md        ← slice manifest + ultra-granular steps with checkboxes
@@ -136,6 +137,7 @@ Template:
 
 - **Status:** interview | research | architecture | plan | build | tests | security | final-sweep | deploy | done
 - **Depth:** quick | standard | deep
+- **Mode:** greenfield | brownfield
 - **Slug:** {kebab-title}
 - **Created:** {YYYY-MM-DD}
 - **Updated:** {YYYY-MM-DD}
@@ -177,6 +179,18 @@ slice thinness and **review-panel rigor** (`references/engineering-flow.md`): qu
 ≤1 redo; standard = the full reviewer + security + verifier trio; deep = adversarial multi-reviewer with
 refutation. Slice **risk** raises panel intensity above the depth floor.
 </depth_levels>
+
+<modes>
+Forge runs in one of two modes, set at the start of the interview:
+- **greenfield** (default) — building something new. The pipeline as described.
+- **brownfield** — changing an **existing** project. Auto-detect: substantial existing source ⇒ brownfield
+  (confirm with the user). Brownfield keeps all nine phases but adapts them — comprehend the system first
+  (`forge-cartographer` → `MAP.md`), design the change as a **delta** that fits the existing architecture,
+  establish a regression baseline + characterization tests instead of a walking skeleton, and **surface
+  pre-existing issues without refactoring the whole app**. The canonical per-phase adaptations live in
+  `references/brownfield.md`; each phase playbook carries a short **Brownfield** note. Record `Mode` in
+  FORGE.md.
+</modes>
 
 <flow>
 Run phases in order. For each phase: **Read the playbook file, then execute it end-to-end**, write its
@@ -243,7 +257,8 @@ On invocation, before anything else:
    - **`abandon`** — confirm, archive to `.forge/archive/{slug}/`, stop.
    - **`<idea text>`** — if a forge is already in progress, ask whether to resume it or archive-and-
      start-new. If none in progress (or status is `done`, archive the done one), begin a fresh forge:
-     create `.forge/`, write an initial FORGE.md, enter the Interview phase.
+     create `.forge/`, write an initial FORGE.md, enter the Interview phase. Detect greenfield vs
+     brownfield from existing source and confirm the mode at intake.
    - **no argument and no forge in progress** — ask the user what they want to build, then begin.
 
 Always keep FORGE.md's `Status`, `Updated`, ledger, and `Current position` accurate so a future
@@ -267,6 +282,9 @@ session can resume cold.
   the local machine (push, deploy, sending messages) — confirm first. Never auto-push.
 - **Reuse over reinvent.** When forging inside an existing codebase, research its patterns first and
   follow them rather than introducing parallel conventions.
+- **Brownfield: safe change, not a rewrite.** On an existing project, comprehend first (`MAP.md`), fit its
+  conventions, pin behaviour with characterization tests before changing it, and **surface** pre-existing
+  issues rather than refactoring beyond scope. See `references/brownfield.md`.
 - **Don't over-build.** Implement what the SPEC requires. No speculative abstractions, no features the
   user didn't ask for. Granular ≠ bloated.
 - **When NOT to use forge:** trivial edits, single-file fixes, or quick questions. Say so and just do
@@ -283,6 +301,7 @@ they're missing. The roster + consensus rules live in `references/engineering-fl
 | Need | Forge's dedicated agent | External skill to prefer if installed |
 |------|-------------------------|----------------------------------------|
 | Research & grounding (②) | `forge-researcher` | — |
+| Map an existing codebase (②, brownfield) | `forge-cartographer` | `Explore` |
 | System design (③) | orchestrator + `references/standards.md` | `engineering:architecture`, `engineering:system-design` |
 | Design direction & UI (③, ⑤) | `forge-designer` | `anthropic-skills:theme-factory`, `design:design-system`, `design:design-critique`, `design:accessibility-review`, 21st.dev Magic / shadcn |
 | Implement a slice (⑤) | `forge-implementer` · `forge-frontend-engineer` (UI) | — |

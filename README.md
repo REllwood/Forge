@@ -42,7 +42,7 @@ Forge is just Markdown instructions, so it runs wherever your assistant can load
 
 | Tool | Mechanism | Experience |
 |------|-----------|------------|
-| **Claude Code** | Plugin (skill + 7 subagents) | **Full** — parallel subagents, the review panel, structured questions, plugin install |
+| **Claude Code** | Plugin (skill + 8 subagents) | **Full** — parallel subagents, the review panel, structured questions, plugin install |
 | **Codex CLI** | [Agent Skill](https://developers.openai.com/codex/skills) (`~/.codex/skills/forge/`) | Core pipeline; subagents → inline, questions → plain text |
 | **Cursor** | [Command](https://cursor.com/docs) (`~/.cursor/commands/forge.md`) | Core pipeline; inline review, plain-text questions |
 | **Gemini CLI, Aider, Windsurf, Zed, …** | `dist/forge.md` as a command / system prompt, or via [`AGENTS.md`](https://agents.md) | Core pipeline; varies by tool |
@@ -161,6 +161,7 @@ A documented, resumable trail in `.forge/`:
 | `FORGE.md` | Manifest + state (which phase, depth, idea) — the resume anchor |
 | `SPEC.md` | Locked decisions from the interview |
 | `RESEARCH.md` | Grounded findings, version pins, resolved forks |
+| `MAP.md` | Reverse-engineered map of an existing codebase (brownfield only) |
 | `ARCHITECTURE.md` | System design: boundaries, data model, contracts, ADRs, threat model |
 | `DESIGN.md` | Lead designer's UI direction (UI builds): tokens, layout, every state |
 | `PLAN.md` | The slice manifest + granular step plan (checkboxes) |
@@ -169,7 +170,7 @@ A documented, resumable trail in `.forge/`:
 | `REVIEW.md` | Final-sweep bug/logic findings |
 | `DEPLOY.md` | Deploy target / steps / result (if the Deploy phase runs) |
 
-Plus, on Claude Code, **seven dedicated subagents** form the engineering org: **`forge-researcher`** (grounding), **`forge-implementer`** and **`forge-frontend-engineer`** (build the code + tests), **`forge-designer`** (UI direction), and the read-only review panel — **`forge-reviewer`**, **`forge-security-auditor`**, **`forge-verifier`** — that must sign off before each feature integrates.
+Plus, on Claude Code, **eight dedicated subagents** form the engineering org: **`forge-researcher`** (grounding) and **`forge-cartographer`** (maps an existing codebase in brownfield mode), **`forge-implementer`** and **`forge-frontend-engineer`** (build the code + tests), **`forge-designer`** (UI direction), and the read-only review panel — **`forge-reviewer`**, **`forge-security-auditor`**, **`forge-verifier`** — that must sign off before each feature integrates.
 
 ## Customization
 
@@ -186,6 +187,8 @@ Plus, on Claude Code, **seven dedicated subagents** form the engineering org: **
 **`/forge` isn't found.** Confirm the install path for your tool (above). On Claude Code, a plugin-installed skill may be `/forge:forge`; manual installs are `/forge`. Restart your assistant after installing.
 
 **Do I need the GitHub CLI?** Only for automatic repo creation. Without `gh`, choose git-only or skip version control — Forge asks at the start.
+
+**Can I run it on an existing project?** Yes — Forge detects an existing codebase and switches to **brownfield mode**: a `forge-cartographer` maps the system first (`MAP.md`), the architecture phase designs your change as a *delta* that fits it, and the build runs *regression-first* (baseline + characterization tests, full-suite gating) — surfacing pre-existing issues rather than refactoring beyond scope.
 
 **It behaves differently in Codex/Cursor.** Expected — see [Compatibility](#compatibility). The pipeline is the same; subagents and choice-menus degrade to inline work and plain-text questions.
 
@@ -204,18 +207,19 @@ skills/forge/
   phases/1-9.md        # per-phase playbooks (lazy-loaded)
   references/standards.md         # architecture + UI + design quality bars
   references/engineering-flow.md  # the staffed build: roster, consensus, adversarial review
+  references/brownfield.md        # running Forge on an existing project (mode adaptations)
 agents/
-  forge-researcher.md  forge-implementer.md  forge-frontend-engineer.md
+  forge-researcher.md  forge-cartographer.md  forge-implementer.md  forge-frontend-engineer.md
   forge-designer.md  forge-reviewer.md  forge-security-auditor.md  forge-verifier.md
 dist/
   forge.md             # portable, single-file build for Codex/Cursor/other tools
 install.sh             # cross-tool installer
-README.md  LICENSE  CHANGELOG.md  CONTRIBUTING.md
+README.md  LICENSE
 ```
 
 ## Contributing
 
-Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). The one rule to remember: `skills/forge/` and `dist/forge.md` are two renderings of the same pipeline; keep them in sync.
+Issues and PRs welcome. The one rule to remember: `skills/forge/` and `dist/forge.md` are two renderings of the same pipeline; keep them in sync.
 
 ## Roadmap
 

@@ -8,6 +8,10 @@ pass with fresh eyes. Run the whole thing. Then ship clean documentation and a f
 
 > This is the safety net. Assume there's at least one bug you haven't found yet, and go looking for it.
 
+> **Brownfield:** scope the sweep to the change + blast radius and confirm it broke nothing (baseline +
+> full suite green); record pre-existing issues as known limitations rather than refactoring them. See
+> `references/brownfield.md`.
+
 ---
 
 ## 1. Fresh-context bug & logic hunt (delegate)

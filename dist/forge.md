@@ -60,6 +60,7 @@ Create and maintain these; they document the build and make it resumable across 
   transition.**
 - **`SPEC.md`** — locked decisions from the interview.
 - **`RESEARCH.md`** — grounded findings, version pins, resolved forks.
+- **`MAP.md`** — reverse-engineered map of an existing codebase (brownfield only).
 - **`ARCHITECTURE.md`** — system design: boundaries, data model, contracts, ADRs, threat model.
 - **`DESIGN.md`** — lead designer's UI direction (UI builds): tokens, layout, every state.
 - **`PLAN.md`** — the slice manifest + granular steps (checkboxes).
@@ -78,6 +79,24 @@ Create and maintain these; they document the build and make it resumable across 
 
 Risk raises panel intensity above the depth floor: any slice touching auth, data, money, external input,
 or a public surface always gets the full panel with security emphasis.
+
+## Mode — greenfield or brownfield
+Set at intake. **greenfield** (default) builds something new — the pipeline as written. **brownfield**
+changes an **existing** project: auto-detect (substantial existing source ⇒ brownfield; confirm) and record
+`Mode` in FORGE.md. Brownfield keeps all nine phases but adapts them:
+- **Comprehend first** — before designing, map the existing system (a `forge-cartographer` subagent, or do
+  it yourself): architecture, conventions, the real build/test/run commands, dependencies, **fragile /
+  high-blast-radius areas**, and whether the suite passes now. Write it to **`MAP.md`**.
+- **Interview** asks what to **change** and **what must NOT change** (contracts/behaviour).
+- **Architecture** *documents* the existing system, then designs the change as a **delta** that fits it (no
+  parallel patterns); ADRs + threat model scoped to the change + blast radius.
+- **Plan** skips the walking skeleton — the foundational slice establishes a **green baseline +
+  characterization tests**; slices are change-deltas tagged with blast radius, default risk a notch higher.
+- **Build** is **regression-first**: baseline the suite before touching anything; every panel runs the full
+  existing suite and the reviewer checks *"did this break an existing contract / caller / behaviour?"*
+- **Tests / Security / Final sweep** stay scoped to the change + blast radius and **surface pre-existing
+  issues as findings** — never refactor the whole legacy app out of scope. **Deploy** reuses the existing
+  path / CI.
 
 ---
 

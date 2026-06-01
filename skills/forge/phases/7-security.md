@@ -10,6 +10,9 @@ the per-slice reviews couldn't see.
 > Be a defensive reviewer here. The job is to find what's wrong, not to reassure. Assume inputs are
 > hostile and secrets leak unless proven otherwise.
 
+> **Brownfield:** scope the audit to the change + its blast radius; **record** pre-existing vulnerabilities
+> as findings (don't fix the whole legacy app unless in scope). See `references/brownfield.md`.
+
 ---
 
 ## 1. Review (delegate for thoroughness)
