@@ -21,6 +21,8 @@ From SPEC, enumerate what must be verified. Typically:
 - **Feasibility** of the overall approach and any novel/uncertain part.
 - **Better alternatives** to any choice that looks risky, unmaintained, or ill-fitting.
 - For **existing codebases**: reusable patterns, conventions, and assets we must align with.
+- For a **UI**: candidate component libraries / design systems (shadcn, MUI, etc.) — currency,
+  accessibility, license — to feed the design phase (③).
 
 ## 2. Spawn research in parallel (scale by depth)
 
@@ -64,7 +66,7 @@ Present these via `AskUserQuestion` (recommended option first, with the rational
 back into `SPEC.md` (amend the locked choices) and note them in RESEARCH.md. If research surfaced
 nothing notable, say so in one line and proceed — but never skip the check.
 
-Update FORGE.md: check ②, Status → `plan`, refresh Current position.
+Update FORGE.md: check ②, Status → `architecture`, refresh Current position.
 
 ```markdown
 # RESEARCH — {title}
@@ -98,4 +100,4 @@ Update FORGE.md: check ②, Status → `plan`, refresh Current position.
 ```
 
 **Exit criteria:** RESEARCH.md written, every SPEC assumption either confirmed or revised, findings gate
-presented and resolved, FORGE.md updated. → Proceed to `phases/3-plan.md`.
+presented and resolved, FORGE.md updated. → Proceed to `phases/3-architecture.md`.

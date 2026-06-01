@@ -2,16 +2,17 @@
 
 **Take a software idea from concept to a verified, documented implementation in one meticulous, agentic pipeline.**
 
-Forge isn't an app you run. It's a set of instructions your AI coding assistant follows a complete engineering workflow with the conversational feel of plan mode. It interviews you until there are no grey areas, grounds every assumption in current reality, writes an ultra-granular plan, then builds it autonomously: verifying **every** step, running a security pass, and finishing with a bug-and-logic sweep — documenting the whole thing as it goes.
+Forge isn't an app you run. It's a set of instructions your AI coding assistant follows — a complete engineering workflow with the conversational feel of plan mode. It interviews you until there are no grey areas, grounds every assumption in current reality, designs the system, writes an ultra-granular plan, then builds it autonomously **like a staffed engineering team**: a staff engineer implements each feature, then an independent reviewer + security engineer (and, for UI, a lead designer) try to break it and must all sign off before it integrates — finishing with a security pass and a bug-and-logic sweep, documenting the whole thing as it goes.
 
 ```
   idea
    │
    ▼
- ① INTERVIEW ──▶ ② RESEARCH ──▶ ③ PLAN ──▶ ④ BUILD ──▶ ⑤ TESTS? ──▶ ⑥ SECURITY ──▶ ⑦ FINAL SWEEP ──▶ done
-   SPEC.md       RESEARCH.md     PLAN.md    PROGRESS.md   (opt)        SECURITY.md     REVIEW.md + docs
-   (no grey      (ground every   (tiny      (verify EVERY            (OWASP, fix      (bugs, logic,
-    areas)        assumption)     steps)     step before moving)      criticals)       run the app)
+ ① INTERVIEW → ② RESEARCH → ③ ARCHITECTURE → ④ PLAN → ⑤ BUILD → ⑥ TESTS? → ⑦ SECURITY → ⑧ FINAL SWEEP → ⑨ DEPLOY? → done
+   SPEC.md      RESEARCH.md   ARCHITECTURE.md  PLAN.md   PROGRESS.md  (opt)      SECURITY.md   REVIEW.md+docs   (opt)
+   no grey      ground every  system design,   slices +  staff eng    coverage   OWASP, fix    bugs/logic +    ship &
+   areas        assumption    ADRs, threat,    risk      builds →     audit      criticals     run the app     smoke-test
+                              + DESIGN (UI)     tags      panel signs
 ```
 
 Works with **Claude Code** (full experience), **Codex**, **Cursor**, and any tool that takes a custom command or system prompt.
@@ -25,7 +26,7 @@ Works with **Claude Code** (full experience), **Codex**, **Cursor**, and any too
 
 Plan mode is great for thinking; it doesn't build. Heavyweight phased workflows build, but make you drive a dozen commands and carry a lot of scaffolding. Forge is the middle path: **one command**, all the human decisions front-loaded, then autonomous execution that holds itself to a high bar and documents everything.
 
-Its six principles override convenience at every step:
+Its seven principles override convenience at every step:
 
 1. **No grey areas** — ambiguity is a bug; resolve it before building.
 2. **Ground everything in reality** — verify versions, APIs, and "best practice" against current primary sources, never training memory.
@@ -33,6 +34,7 @@ Its six principles override convenience at every step:
 4. **Verify or it didn't happen** — every build step ends with a concrete check that proves it works.
 5. **Document as you go** — the `.forge/` trail is the source of truth and makes a build resumable.
 6. **Build to a standard** — sound architecture and accessible, well-designed UI are part of "done," sized to scope.
+7. **Adversarial consensus** — no feature ships on one set of eyes; an independent reviewer and security engineer (and, for UI, design) must try to break it and sign off, or it goes back with feedback.
 
 ## Compatibility
 
@@ -40,7 +42,7 @@ Forge is just Markdown instructions, so it runs wherever your assistant can load
 
 | Tool | Mechanism | Experience |
 |------|-----------|------------|
-| **Claude Code** | Plugin (skill + 4 subagents) | **Full** — parallel subagents, structured questions, plugin install |
+| **Claude Code** | Plugin (skill + 7 subagents) | **Full** — parallel subagents, the review panel, structured questions, plugin install |
 | **Codex CLI** | [Agent Skill](https://developers.openai.com/codex/skills) (`~/.codex/skills/forge/`) | Core pipeline; subagents → inline, questions → plain text |
 | **Cursor** | [Command](https://cursor.com/docs) (`~/.cursor/commands/forge.md`) | Core pipeline; inline review, plain-text questions |
 | **Gemini CLI, Aider, Windsurf, Zed, …** | `dist/forge.md` as a command / system prompt, or via [`AGENTS.md`](https://agents.md) | Core pipeline; varies by tool |
@@ -59,7 +61,7 @@ On tools without subagents or a choice UI, Forge degrades gracefully — it does
 
 ```bash
 git clone https://github.com/REllwood/Forge.git
-cd forge
+cd Forge
 ./install.sh            # auto-detects installed tools
 # or target one:  ./install.sh claude | codex | cursor | all
 ```
@@ -96,7 +98,7 @@ subagents needed). Easiest:
 
 ```bash
 mkdir -p ~/.codex/skills/forge
-{ printf -- '---\nname: forge\ndescription: Idea-to-implementation pipeline — interview, research, plan, verified build, security, final sweep.\n---\n\n'; cat dist/forge.md; } > ~/.codex/skills/forge/SKILL.md
+{ printf -- '---\nname: forge\ndescription: Idea-to-implementation pipeline — interview, research, architecture, plan, a staffed consensus-gated build, tests, security, final sweep, optional deploy.\n---\n\n'; cat dist/forge.md; } > ~/.codex/skills/forge/SKILL.md
 ```
 </details>
 
@@ -132,21 +134,23 @@ Use [`dist/forge.md`](dist/forge.md) as a custom command or system prompt, or fo
 /forge restart                      # archive the current build and start over
 ```
 
-**What the first run looks like:** Forge asks you to pick a depth (`quick` / `standard` / `deep`), settles version control, then interviews you — proposing sensible defaults so you can mostly confirm rather than compose. It researches your stack and surfaces anything surprising (a deprecated API, a better library) for your call. It presents a granular plan for approval. After you approve, it builds autonomously — verifying each step, running an optional test suite, a security pass, and a final bug sweep — pausing only when it genuinely needs you.
+**What the first run looks like:** Forge asks you to pick a depth (`quick` / `standard` / `deep`), settles version control, then interviews you — proposing sensible defaults so you can mostly confirm rather than compose. It researches your stack and surfaces anything surprising (a deprecated API, a better library) for your call. It designs the system, then presents the **architecture + a granular plan** for approval. After you approve, it builds autonomously **like a staffed team** — each feature implemented by a staff engineer and signed off by an independent review + security panel (plus design for UI) before it integrates — then consolidates tests, runs a security pass and a final bug sweep, and optionally deploys — pausing only when it genuinely needs you.
 
 ## How it works
 
-Forge runs seven phases and writes an artifact for each into a `.forge/` folder in your project:
+Forge runs nine phases and writes an artifact for each into a `.forge/` folder in your project:
 
-1. **Interview** → settles version control and interviews you across purpose, scope & non-goals, architecture, tech stack, data, integrations, and UI/theme — until there are no grey areas. → `SPEC.md`
-2. **Research & grounding** → verifies your stack and APIs against current sources; a hard gate surfaces *material* findings (deprecations, breaking changes, better options) before any planning. → `RESEARCH.md`
-3. **Plan** → decomposes the work into many tiny, individually-verifiable steps, each with an explicit verification; you approve it (the one deliberate go/no-go). → `PLAN.md`
-4. **Build** → executes the steps in order, **verifying every one** (typecheck/lint/run/functional/regression; browser + accessibility for UI) before moving on; commits per your chosen cadence. → `PROGRESS.md`
-5. **Tests** *(optional)* → tests derived from your success criteria and edge cases.
-6. **Security pass** → an OWASP-mapped audit; fixes Critical/High. → `SECURITY.md`
-7. **Final sweep** → a fresh-context hunt for bugs and logic errors, then runs the app on the golden path and key edge cases, and ships clean docs. → `REVIEW.md`
+1. **Interview** → settles version control and interviews you across purpose, scope & non-goals, architecture constraints, tech stack, data, integrations, and UI/theme — until there are no grey areas. → `SPEC.md`
+2. **Research & grounding** → verifies your stack and APIs against current sources; a hard gate surfaces *material* findings (deprecations, breaking changes, better options) before any design. → `RESEARCH.md`
+3. **Architecture & Design** → designs the system — component boundaries, data model, contracts, decisions as ADRs, a lightweight threat model — and, for UI, a design direction (tokens, layout, every state) grounded in references / Dribbble / Mobbin. → `ARCHITECTURE.md` (+ `DESIGN.md`)
+4. **Plan** → decomposes the architecture into dependency-ordered, risk-tagged **feature slices**, each a cluster of tiny verifiable steps; you approve the architecture + plan together (the one deliberate go/no-go). → `PLAN.md`
+5. **Build** → the staffed consensus loop: a **staff engineer** implements each slice + its tests (self-verifying every step), then an **adversarial panel** (reviewer + security + QA, plus a designer for UI) reviews it against the whole codebase and must all sign off — or it goes back with feedback. Commits per slice. → `PROGRESS.md`
+6. **Tests** → per-feature tests already exist; this consolidates integration/e2e coverage and audits it against every success criterion.
+7. **Security pass** → a final whole-system OWASP-mapped audit; fixes Critical/High. → `SECURITY.md`
+8. **Final sweep** → a fresh-context hunt for bugs and logic errors, then runs the app on the golden path and key edge cases, and ships clean docs. → `REVIEW.md`
+9. **Deploy** *(optional)* → ships to your target and smoke-tests the live artifact, confirming before anything risky. → `DEPLOY.md`
 
-After plan approval it's **agentic** — it runs straight through, stopping only for genuine ambiguity, a true blocker, a risky/irreversible action, or a material scope change.
+After plan approval it's **agentic** — it runs straight through, stopping only for genuine ambiguity, a true blocker, a risky/irreversible action, a material scope change, or a stuck review panel.
 
 ## What you get
 
@@ -157,19 +161,23 @@ A documented, resumable trail in `.forge/`:
 | `FORGE.md` | Manifest + state (which phase, depth, idea) — the resume anchor |
 | `SPEC.md` | Locked decisions from the interview |
 | `RESEARCH.md` | Grounded findings, version pins, resolved forks |
-| `PLAN.md` | The granular step plan (checkboxes) |
-| `PROGRESS.md` | Per-step build log: did / files / verify result / deviations |
+| `ARCHITECTURE.md` | System design: boundaries, data model, contracts, ADRs, threat model |
+| `DESIGN.md` | Lead designer's UI direction (UI builds): tokens, layout, every state |
+| `PLAN.md` | The slice manifest + granular step plan (checkboxes) |
+| `PROGRESS.md` | Per-slice build log: implementer / panel verdicts / rounds / verify / deviations |
 | `SECURITY.md` | Severity-classified security findings |
 | `REVIEW.md` | Final-sweep bug/logic findings |
+| `DEPLOY.md` | Deploy target / steps / result (if the Deploy phase runs) |
 
-Plus, on Claude Code, four read-only subagents do the heavy lifting and return findings: **`forge-researcher`**, **`forge-reviewer`**, **`forge-security-auditor`**, **`forge-verifier`**.
+Plus, on Claude Code, **seven dedicated subagents** form the engineering org: **`forge-researcher`** (grounding), **`forge-implementer`** and **`forge-frontend-engineer`** (build the code + tests), **`forge-designer`** (UI direction), and the read-only review panel — **`forge-reviewer`**, **`forge-security-auditor`**, **`forge-verifier`** — that must sign off before each feature integrates.
 
 ## Customization
 
 - **Depth** — pick `quick` / `standard` / `deep` at the start to scale how thorough each phase is.
 - **Standards** — edit [`skills/forge/references/standards.md`](skills/forge/references/standards.md) to encode your own architecture/UI/design bars.
 - **Phases** — each phase is a small playbook in [`skills/forge/phases/`](skills/forge/phases); tweak any of them.
-- **Optional integrations** — when these skills are installed, Forge prefers them and falls back gracefully: `/verify`, `/run`, `/code-review`, `/security-review`, `engineering:debug`, `engineering:testing-strategy`, and design/architecture skills.
+- **Engineering flow** — edit [`skills/forge/references/engineering-flow.md`](skills/forge/references/engineering-flow.md) to tune the build's roster, consensus rules, adversarial review, and risk classification.
+- **Optional integrations** — when these are installed, Forge prefers them and falls back gracefully: `/verify`, `/run`, `/code-review`, `/security-review`, `engineering:debug`, `engineering:testing-strategy`, `engineering:architecture` / `engineering:system-design`, the design skills (`design:design-system`, `design:accessibility-review`, `anthropic-skills:theme-factory`), and the **21st.dev Magic MCP** / **shadcn** for UI components.
 
 ## FAQ and troubleshooting
 
@@ -193,11 +201,12 @@ Plus, on Claude Code, four read-only subagents do the heavy lifting and return f
   marketplace.json     # lets the repo be added as a plugin marketplace
 skills/forge/
   SKILL.md             # orchestrator: principles, autonomy, flow, routing, portability
-  phases/1-7.md        # per-phase playbooks (lazy-loaded)
-  references/standards.md  # architecture + UI + design quality bars
+  phases/1-9.md        # per-phase playbooks (lazy-loaded)
+  references/standards.md         # architecture + UI + design quality bars
+  references/engineering-flow.md  # the staffed build: roster, consensus, adversarial review
 agents/
-  forge-researcher.md  forge-reviewer.md
-  forge-security-auditor.md  forge-verifier.md
+  forge-researcher.md  forge-implementer.md  forge-frontend-engineer.md
+  forge-designer.md  forge-reviewer.md  forge-security-auditor.md  forge-verifier.md
 dist/
   forge.md             # portable, single-file build for Codex/Cursor/other tools
 install.sh             # cross-tool installer
@@ -210,7 +219,7 @@ Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). The one rule 
 
 ## Roadmap
 
-Deliberately not in v1 (easy to add): an optional **deploy** phase (Vercel/Netlify/Fly/Docker) and a **CI/CD** workflow + environment bootstrap.
+An optional **deploy** phase (Vercel/Netlify/Fly/Docker) now ships as phase ⑨. Still roadmap (easy to add): a full **CI/CD** workflow + environment bootstrap, and **parallelising independent slices** across git worktrees for faster large builds.
 
 ## License
 

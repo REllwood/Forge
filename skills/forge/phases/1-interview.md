@@ -59,7 +59,8 @@ Cover these dimensions (scaled by depth; skip any that are truly N/A, e.g. UI fo
 4. **Architecture shape** — Major components and how data flows between them. Monolith vs. services.
    Sync vs. async. Where state lives. Aim for the sound, right-sized structure in
    `references/standards.md` (separation of concerns, clear boundaries) — propose it; don't make the user
-   design it from scratch.
+   design it from scratch. (The full system design is produced in phase ③ — here, capture the
+   *constraints and preferences* that shape it, not the final design.)
 5. **Tech stack** — Language, framework, runtime, database. If the user defers, **propose a specific
    recommended stack with a one-line rationale** and let them confirm or override. (Verify currency in
    research — don't lock versions here.)

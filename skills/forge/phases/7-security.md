@@ -1,7 +1,9 @@
-# Phase ⑥ — Security pass
+# Phase ⑦ — Security pass
 
 **Goal:** Find and call out security issues before this is considered done. Produce `SECURITY.md` with
-severity-classified findings, and fix the dangerous ones.
+severity-classified findings, and fix the dangerous ones. Per-slice security ran in every build panel;
+this is the **final whole-system** audit — the full codebase, dependency tree, and cross-cutting config
+the per-slice reviews couldn't see.
 
 **Inputs:** the built code, `.forge/SPEC.md` (data sensitivity, auth, integrations), `.forge/PROGRESS.md`.
 
@@ -45,7 +47,7 @@ break behavior (re-run the relevant step/test checks). Fix cheap, low-risk Mediu
 record the rest in SECURITY.md as recommendations — **don't stop to ask**, surface them in the final
 summary. Log fixes in PROGRESS.md.
 
-Update FORGE.md (check ⑥). → Proceed to `phases/7-final-sweep.md`.
+Update FORGE.md (check ⑦). → Proceed to `phases/8-final-sweep.md`.
 
 ```markdown
 # SECURITY — {title}
@@ -66,4 +68,4 @@ Update FORGE.md (check ⑥). → Proceed to `phases/7-final-sweep.md`.
 ```
 
 **Exit criteria:** SECURITY.md written; all Critical/High fixed and re-verified; remaining items recorded
-with a decision. → `phases/7-final-sweep.md`.
+with a decision. → `phases/8-final-sweep.md`.

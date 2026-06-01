@@ -1,7 +1,8 @@
-# Phase ⑦ — Final sweep
+# Phase ⑧ — Final sweep
 
-**Goal:** The last, meticulous check for bugs and logical errors — the kind that pass typechecks and
-slip past per-step verification. Run the whole thing. Then ship clean documentation and a final summary.
+**Goal:** The last, meticulous check for bugs and logical errors — the kind that pass typechecks and slip
+past per-step verification. Per-slice panels already vetted each feature; this is the final whole-system
+pass with fresh eyes. Run the whole thing. Then ship clean documentation and a final summary.
 
 **Inputs:** everything — the full codebase, `.forge/SPEC.md`, `PLAN.md`, `PROGRESS.md`, `SECURITY.md`.
 
@@ -54,9 +55,10 @@ Confirm location with the user if unsure (default: repo root `README.md` + `docs
 
 ## 5. Final summary & close out
 
-If version control / GitHub was set up, make the **final commit and push** of the completed state (code +
-docs) per the authorized cadence. Then mark FORGE.md Status → `done`, check ⑦. Present the user a concise
-wrap-up:
+Make the **final commit** of the completed state (code + docs) per the authorized cadence, then check ⑧ in
+FORGE.md. **If the Deploy phase (⑨) was chosen**, proceed to `phases/9-deploy.md` (it makes the final push,
+writes DEPLOY.md, and delivers the wrap-up). Otherwise push per cadence, mark Status → `done`, and present
+the user a concise wrap-up:
 - **What was built** (against the original idea).
 - **How it was verified** (per-step, tests, security, final sweep — point to the artifacts).
 - **Known limitations / deferred items** (assumptions, Medium/Low findings left, non-goals).
@@ -87,4 +89,4 @@ wrap-up:
 
 **Exit criteria:** REVIEW.md written; app + tests run and pass on golden path + key edge cases; every
 SPEC success criterion confirmed met (or explicitly flagged); Critical/High fixed; docs shipped;
-FORGE.md → done; final summary delivered.
+FORGE.md → done (or → `phases/9-deploy.md` if Deploy was chosen); final summary delivered.

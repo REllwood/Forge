@@ -57,11 +57,30 @@ architecture; `design:design-system`, `design:design-critique`, `design:accessib
 - **Polish to the references** the user named in SPEC — aim for a coherent, intentional product, not a
   template dump.
 
+### Design inspiration & component tooling
+The lead designer (`forge-designer`) grounds `DESIGN.md` in real references, then the frontend engineer
+builds it — preferring proven components over hand-rolling, with graceful fallback.
+- **Inspiration (read).** Start from the user's named references in SPEC, then mine current patterns:
+  **Dribbble** (polished visual concepts) and **Mobbin** (600k+ real-app screenshots — real flows and
+  states) via `WebSearch`/`WebFetch`. Pull concrete, accessible direction (layout, hierarchy, motion,
+  color) into `DESIGN.md` — never copy a specific designer's work; synthesise.
+- **Components (act).** Prefer **21st.dev Magic MCP** (`@21st-dev/magic`; install with
+  `npx @21st-dev/cli@latest install claude --api-key <key>`) to generate high-quality component
+  variations, and/or the **shadcn** registry, when installed. **Graceful fallback:** if neither is
+  available, hand-roll components held to the bars above. These are boosters, never a hard dependency.
+- **Specialist skills.** Prefer `anthropic-skills:theme-factory` for tokens/themes, `design:design-system`
+  for structure, and `design:design-critique` / `design:accessibility-review` for the panel's design pass
+  when present.
+- `DESIGN.md` is the **contract**: the frontend engineer builds to it and the panel reviews against it.
+
 ---
 
 ## How the phases use this file
 - **Interview** — ask informed UI/design/architecture questions; propose good, accessible defaults.
-- **Plan** — sequence steps to establish the architecture early (scaffold layers; set up design tokens
-  and base components before features).
-- **Build** — implement to these bars; UI step verification includes responsive + accessibility checks.
+- **Architecture** — the architecture bars below shape `ARCHITECTURE.md` (boundaries, layering,
+  dependency direction, data layer); the lead designer derives `DESIGN.md` direction + tokens.
+- **Plan** — sequence slices to establish the architecture early (scaffold layers; set up design tokens
+  and base components before the features that use them).
+- **Build** — the staff engineer implements to these bars; the panel reviews against them, and UI gets a
+  responsive + accessibility pass (per `engineering-flow.md`'s adversarial UI contract).
 - **Final sweep** — review the result against this file: architecture soundness plus a design + a11y pass.
