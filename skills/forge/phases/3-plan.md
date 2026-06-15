@@ -22,6 +22,9 @@ runs (even if it does almost nothing), so every later step builds on something v
 **Architect it early (`references/standards.md`).** Sequence steps so the sound, right-sized structure is
 in place before features pile on: scaffold the layers / separation of concerns first, and for a UI set up
 design tokens and base components before the screens that use them. Don't defer architecture to "later."
+**When `.forge/UI-DESIGN.md` exists** (the build has a UI), sequence the UI steps from it — design tokens +
+base components first, then each screen with its states — implementing the panel's agreed design, not an
+ad-hoc look.
 
 Granularity test for each step: *Can I implement this with a focused change and prove it works with one
 concrete check?* If not, split it.
@@ -42,8 +45,10 @@ Final sweep (⑦) are always included — list them as the closing phases.
 ## 4. Present for approval — DO NOT build yet
 
 Write `.forge/PLAN.md`, then present a concise outline (phases + step counts + the headline steps) to
-the user. Ask via `AskUserQuestion`: **Approve / Revise (tell me what) / Change depth.** Iterate on the
-plan until approved. Building before approval violates the pipeline.
+the user — **and, if `.forge/UI-DESIGN.md` exists, the UI direction with it**: the design summary, any
+`.forge/ui-mockups/`, and any flagged departures from the user's stated preference, for sign-off here.
+Ask via `AskUserQuestion`: **Approve / Revise (tell me what) / Change depth.** Iterate on the plan (and
+the UI direction) until approved. Building before approval violates the pipeline.
 
 **This is the last routine stop.** It's a deliberate go/no-go because building on a wrong plan wastes the
 most work. After approval, forge runs **autonomously to done** (build → tests → security → final sweep),

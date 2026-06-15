@@ -47,10 +47,12 @@ rewrite) always need explicit OK.
 
 ## Artifacts — `.forge/` at the project root
 Create and maintain these; they document the build and make it resumable across resets.
-- **`FORGE.md`** — manifest + state: status (which phase), depth, idea, phase ledger, "current
+- **`FORGE.md`** — manifest + state: status (which phase), depth, economy, hardening, idea, phase ledger, "current
   position," open assumptions. **Read it first on resume; update at every phase transition.**
 - **`SPEC.md`** — locked decisions from the interview.
 - **`RESEARCH.md`** — grounded findings, version pins, resolved forks.
+- **`UI-DESIGN.md`** *(conditional — only if the build has a UI)* — the agreed UI design contract (+
+  throwaway mockups under `.forge/ui-mockups/` for visual-heavy apps).
 - **`PLAN.md`** — the granular step plan (checkboxes).
 - **`PROGRESS.md`** — per-step build log (did / files / verify result / deviations).
 - **`SECURITY.md`** — severity-classified security findings.
@@ -63,10 +65,34 @@ Create and maintain these; they document the build and make it resumable across 
 - **deep** — exhaustive questioning until no grey areas, multi-source research, ultra-granular plan, deep
   security + sweep.
 
+## Economy (separate from depth; chosen at the start)
+Controls *how many tokens are spent to reach a given depth* — never *what gets done*. **Economy never
+skips a phase, the research gate, per-step verification, security, or the final sweep, and never lowers
+the rigor bar.**
+- **balanced** (default) — full experience; fresh-context subagents where the tool supports them.
+- **economy** — minimize total tokens: do research/review/security/verify **inline** (no spawned
+  subagents) and stay deliberately adversarial to offset the lost fresh-eyes separation; **one** combined
+  research pass (lean on exact-version docs, cap web fetches, don't over-research the obvious); reuse
+  context and read only needed slices; keep artifacts and narration terse; batch cheap checks (without
+  hiding which step failed). `quick` + `economy` is the leanest run. Prefer `balanced` for
+  security-sensitive work so the audit keeps independent context.
+
+## Hardening (the automated adversarial find→fix→re-check loop in ⑥/⑦)
+Runs automatically — **no user check-ins**. Level defaults from depth (quick→basic, standard→standard,
+deep→comprehensive); the user may set it explicitly ("harden comprehensively"). Each phase: **hunt
+adversarially** — try to BREAK the code, assume defects exist — across the lenses (logic errors · edge
+cases & robustness · error handling & resource safety · concurrency/races · SPEC-vs-implementation
+mismatch · integration correctness · performance where it matters; ⑥ uses the OWASP checklist) → **fix**
+Critical/High (plus Medium at `comprehensive`) → **re-check** (re-run tests/step checks + re-review the
+changed code) → **loop** until a full pass finds nothing new or the round cap (basic 1 · standard 2 ·
+comprehensive 4). **Pragmatic, not paranoid:** severity-gated; no chasing speculative/stylistic issues,
+no manufacturing problems, no looping past convergence; if the cap is hit with issues open, surface them
+as known limitations.
+
 ---
 
 ## ① Interview — eliminate grey areas → `SPEC.md`
-Pick depth. **Settle version control first:** ask whether to set up Git + GitHub / git-only / none / use
+Pick depth and economy. **Settle version control first:** ask whether to set up Git + GitHub / git-only / none / use
 existing repo; if GitHub, capture visibility and push cadence and confirm a standing authorization to
 create the repo and push (check `gh auth status` / `git --version`; fall back to git-only if `gh` is
 unavailable). Then interview adaptively — propose recommendations, don't just ask open-endedly — across:
@@ -87,13 +113,30 @@ API, a breaking change, a materially better option, a feasibility/licensing/secu
 contradiction of a SPEC decision) and get the user's call; apply decisions back into `SPEC.md`. Write
 `RESEARCH.md`.
 
+## ②.5 UI Design → `UI-DESIGN.md` (conditional — only if the build has a UI; else skip to ③)
+A platform-aware **design panel** converges on the best modern UI *within the user's stated scope*:
+- **UI specialist** — designs natively for the platform (web · mobile · desktop · game/HUD · TUI):
+  information architecture, key screens & **all states** (loading/empty/error/success), design tokens
+  (color/type/spacing/radius/motion), layout, navigation, components.
+- **Staff frontend developer** — checks feasibility, modern frontend best practice, component
+  architecture, responsiveness, performance, accessibility-in-practice.
+- **UI artist** — checks visual craft: hierarchy, color, typography, spacing, consistency, modern
+  aesthetic, polish.
+They iterate (designer → both critiques → converge) until it's both buildable and beautiful **and meets
+the UI Acceptance Checklist** (see Standards), anchored to the user's references. **Fidelity auto by app type:** throwaway HTML mockups (1–3 screens,
+in `.forge/ui-mockups/`) for visual-heavy apps; a written design direction for simpler UIs; spec-only in
+`economy`. The UI direction is **presented at the plan-approval gate** (no separate stop); flag any
+departure from the user's stated preference for sign-off. Honor scope — elevate within it, never override
+or gold-plate.
+
 ## ③ Plan → `PLAN.md` (approval gate)
 Decompose into ordered phases → **atomic steps**. Each step: Goal, Files, precise Do-instructions, an
 explicit **Verify** check (the exact command/behavior that proves it works), Depends-on. Front-load a
 **walking skeleton** that runs end-to-end early. **Establish architecture early** (scaffold layers /
 separation of concerns; for UI set up design tokens + base components before features) per Standards.
 Granularity test: if a step needs more than one verification or touches unrelated concerns, split it.
-Decide tests here (yes/no, what kind). **Present the plan for approval — do not build until approved.**
+Decide tests here (yes/no, what kind). **Present the plan — and, if `UI-DESIGN.md` exists, the UI
+direction + mockups — for approval; do not build until approved.**
 This is the last routine stop; after it, run autonomously to done.
 
 ## ④ Build → `PROGRESS.md` (verify every step)
@@ -122,8 +165,9 @@ secrets in code/logs/git; injection (SQL/NoSQL/command/XSS/template/path); authn
 validation at every boundary (server-side); sensitive-data exposure & weak crypto; SSRF/deserialization/
 open redirects; dependency audit (`npm audit`/`pip-audit`/…); insecure config/defaults (debug on,
 permissive CORS, missing headers/rate limits, leaked stack traces). Classify Critical/High/Medium/Low/
-Info with file:line + fix. **Fix Critical/High now** (confirm risky changes) and re-verify; fix cheap
-Medium/Low inline, record the rest as recommendations. Write `SECURITY.md`.
+Info with file:line + fix. Then run the automated **hardening loop** (see Hardening): fix Critical/High
+(plus Medium at `comprehensive`) → re-audit the changed code → repeat until a clean pass or the round
+cap; confirm only risky changes; record anything still open. Write `SECURITY.md`.
 
 ## ⑦ Final sweep → `REVIEW.md` + docs
 Fresh-context hunt for **bugs and logical errors**: wrong conditions/off-by-one/operator/defaults/units/
@@ -131,8 +175,11 @@ state transitions; edge cases (null/empty/large/concurrency/partial-failure/time
 handling at boundaries (unhandled rejections, swallowed errors, resource leaks); **SPEC-vs-implementation
 mismatches**; dead/duplicate code, leftover TODOs/stubs/debug logging; consistency vs Standards. Then
 **run it for real** — full test suite + golden path + key edge cases against the success criteria (drive
-the UI in a browser; for UI also do a design + accessibility pass). Write `REVIEW.md`; fix Critical/High
-and re-verify; record Medium/Low as known limitations. **Ship docs:** generate/refresh a clear README
+the UI in a browser; for UI, verify against the **UI Acceptance Checklist** — resize to mobile/tablet/
+desktop and exercise every state — fixing → re-checking until it passes). Write `REVIEW.md`, then run the
+automated **hardening loop** (see Hardening): fix Critical/High (plus Medium at `comprehensive`) →
+re-hunt the changed code + re-run tests/golden-path → repeat until a clean pass or the round cap; record
+anything still open as known limitations. **Ship docs:** generate/refresh a clear README
 (what it is, setup, run, usage, config) and brief architecture notes. If VCS was set up, make the final
 commit and push. Mark `FORGE.md` → done and give a wrap-up: what was built, how it was verified, known
 limitations, suggested next steps.
@@ -155,6 +202,14 @@ harmonious type scale (≤2 families, comfortable line-height, ~45–75 chars/li
 alignment with deliberate whitespace; restrained, accessible color (never meaning-by-color-alone,
 consistent semantic colors); component reuse and restraint; purposeful, quick motion (~150–250ms); polish
 toward the references in SPEC.
+**UI Acceptance Checklist** (the definition of "done" for any UI — *verify it, don't assume; loop-fix until
+it passes*): **modern** (current visual language, cohesive tokens, not dated) · **responsive** (verified at
+real breakpoints ~375 / 768 / 1280px — no overflow/clipping; touch + pointer) · **accessible WCAG 2.1 AA**
+(keyboard + visible focus, contrast, semantics, labels, reduced-motion) · **all states**
+(loading/empty/error/success) · **feedback & affordance** (loading/disabled, confirm destructive, form
+validation) · **performance** (no layout shift, lazy-load, lean) · **polish** (hierarchy, grid alignment,
+restrained palette, ≤2 fonts, purposeful motion) · **platform-fit**. The design panel signs off against it;
+the build + final sweep check the built result against it and fix until it passes.
 
 ## Start
 Determine the idea from the command's argument or the current message. If `.forge/FORGE.md` exists and

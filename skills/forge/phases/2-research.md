@@ -37,6 +37,11 @@ Delegate to subagents so the main context stays clean. Launch independent invest
 - **Authoritative library docs** → use `mcp__context7__*` (resolve-library-id, then query) for precise,
   version-correct API documentation where available.
 
+**In `economy` mode**, do ALL research as a single inline pass (no spawned agents): lean on Context7 for
+exact-version docs over broad web crawling, cap fetches, and verify the load-bearing / uncertain choices
+without over-researching the obviously-current. The grounding gate still happens — you still surface
+material findings before planning.
+
 Depth scaling: `quick` = one combined pass; `standard` = a few parallel agents; `deep` = thorough
 multi-agent investigation with cross-checking of conflicting sources.
 

@@ -105,6 +105,8 @@ every build fully documented and resumable.
   FORGE.md       ← manifest + state machine pointer (single source of truth for "where are we")
   SPEC.md        ← locked decisions from the interview
   RESEARCH.md    ← grounded findings, version pins, gotchas, resolved forks
+  UI-DESIGN.md   ← (conditional) UI design contract — only when the build has a UI
+  ui-mockups/    ← (conditional) throwaway HTML mockups for visual-heavy UIs
   PLAN.md        ← ultra-granular steps with checkboxes
   PROGRESS.md    ← running build log: did / files / verify result / deviations
   SECURITY.md    ← severity-classified security findings + remediation
@@ -120,6 +122,8 @@ Template:
 
 - **Status:** interview | research | plan | build | tests | security | final-sweep | done
 - **Depth:** quick | standard | deep
+- **Economy:** balanced | economy
+- **Hardening:** basic | standard | comprehensive
 - **Slug:** {kebab-title}
 - **Created:** {YYYY-MM-DD}
 - **Updated:** {YYYY-MM-DD}
@@ -128,6 +132,7 @@ Template:
 ## Phase ledger
 - [ ] ① Interview      → SPEC.md
 - [ ] ② Research       → RESEARCH.md
+- [ ] ②.5 UI Design    → UI-DESIGN.md (only if the build has a UI)
 - [ ] ③ Plan           → PLAN.md
 - [ ] ④ Build          → PROGRESS.md
 - [ ] ⑤ Tests          → (optional; decided in plan)
@@ -156,6 +161,73 @@ Depth is chosen at the start of the interview and scales the whole pipeline. Def
 A higher depth never skips a phase — it makes each phase more thorough.
 </depth_levels>
 
+<token_economy>
+**Economy** is a separate knob from depth, chosen at the start and recorded in FORGE.md. Default is
+**balanced**. It controls *how many tokens the pipeline spends to reach a given depth* — not what gets
+done. **Economy mode never skips a phase, the research gate, per-step verification, the security pass, or
+the final sweep, and never lowers the "no grey areas / verify or it didn't happen" bar.** It trims the
+*expensive machinery*, not the rigor.
+
+- **balanced** (default) — the full experience: fresh-context subagents for research/review/security/
+  verify, parallel investigations, normal progress narration. Best quality and independence.
+- **economy** — minimize total token spend while preserving every guarantee:
+  1. **Inline over subagents.** Do research / review / security / verify in the main context instead of
+     spawning fresh-context `forge-*` agents (each agent re-reads files — the biggest single cost). When a
+     job is genuinely too large for the main context, still spawn one — but give it a tight scope and a
+     low word cap. (Honest tradeoff: less independent "fresh-eyes" separation; offset it by being
+     deliberately adversarial when you self-review.)
+  2. **One research pass, not many.** Collapse parallel research into a single focused pass; lean on
+     Context7 for exact-version docs over broad web crawling; verify the load-bearing / uncertain choices
+     and don't over-research the obviously-current.
+  3. **Reuse context.** Never re-read a file already in context; read only the needed slice of a file, not
+     the whole thing.
+  4. **Terser artifacts & narration.** Keep `.forge/` files tight (bullets, not prose); let
+     PROGRESS.md + checkboxes carry status instead of verbose turn-by-turn commentary.
+  5. **Batch checks.** Group cheap verifications (one combined typecheck/lint/test run) where it doesn't
+     hide which step failed — still functionally exercise every step.
+
+`quick` + `economy` is the leanest possible run; `deep` + `economy` means thorough work done frugally.
+If a build is security-sensitive or high-stakes, prefer `balanced` so the security/review passes keep
+their independent context.
+</token_economy>
+
+<hardening>
+**Hardening** is the automated, adversarial **find → fix → re-check loop** that powers the Security pass
+(⑥) and the Final sweep (⑦). It runs to completion **without user interaction** — only the standard
+`<autonomy>` stop-conditions can pause it (e.g. a fix that needs a risky/irreversible action). Its
+intensity is the **hardening level**, recorded in FORGE.md; it defaults from depth (quick→basic,
+standard→standard, deep→comprehensive) and the user may set it explicitly ("harden comprehensively").
+
+**Levels**
+- **basic** — one adversarial pass per phase; auto-fix Critical/High; one confirming re-check (cap 1 round).
+- **standard** — multi-lens adversarial review; auto-fix Critical/High; re-review the changed code; loop
+  until a clean round (cap 2 rounds).
+- **comprehensive** — every lens, hardest stance; auto-fix Critical/High **and** Medium; re-review after
+  each fix batch; loop until a fully clean round (cap 4 rounds).
+
+**The loop (per phase, automated, repeat until convergence or the round cap):**
+1. **Hunt adversarially** — actively try to BREAK the code; assume defects exist; run the lenses below
+   (scaled by level) as focused passes. In `balanced`, use fresh-context `forge-*` agents so each round is
+   an independent re-certification; in `economy`, do it inline.
+2. **Triage** by severity — in-scope = Critical/High (plus Medium at `comprehensive`).
+3. **Fix** in-scope findings at the root cause; log each in PROGRESS.md.
+4. **Re-check** — re-run the relevant tests/step checks **and** re-review the changed code to confirm the
+   finding is gone and the fix introduced nothing new.
+5. **Converge** — repeat from 1 until a full pass yields no new in-scope findings, or the round cap is
+   hit. Record anything still open (with severity + why) in SECURITY.md / REVIEW.md.
+
+**Lenses** (⑦ correctness side; ⑥ runs the OWASP security checklist instead): logic errors · edge cases &
+robustness · error handling & resource safety · concurrency/races · SPEC-vs-implementation mismatch ·
+integration/contract correctness · performance where it genuinely matters · **UI quality** (when the build
+has a UI — the **UI Acceptance Checklist** in `references/standards.md`: modern · responsive · accessible ·
+all states · polish, judged by `forge-ui-artist` + `forge-frontend-engineer` and fixed until it passes).
+
+**Pragmatic, not paranoid (binding):** hunt in real detail, but only loop on *material*, severity-gated
+findings. Do **not** chase speculative, stylistic, or theoretical issues, manufacture problems to justify
+another round, or gold-plate beyond the SPEC. Record Low/Info as notes and move on. If the cap is reached
+with issues still open, **stop and surface them** as known limitations — never loop forever.
+</hardening>
+
 <flow>
 Run phases in order. For each phase: **Read the playbook file, then execute it end-to-end**, write its
 artifact, update FORGE.md, then continue. The playbooks contain the detailed steps and templates — do
@@ -172,6 +244,12 @@ not improvise a phase from the one-liner here.
    deprecations, feasibility, better options, security advisories). HARD GATE: surface "findings that
    need your attention" and get user decisions on any forks before planning. Write `RESEARCH.md`.
 
+**②.5 UI Design** — `phases/ui-design.md` (only if the SPEC has a UI)
+   A platform-aware design panel — UI specialist (`forge-ui-designer`) + staff frontend developer
+   (`forge-frontend-engineer`) + UI artist (`forge-ui-artist`) — converges on the best modern UI within
+   the user's stated scope. Writes `UI-DESIGN.md` (+ throwaway mockups for visual-heavy apps), presented
+   at the plan-approval gate. Skip entirely for non-UI builds (CLI/library/API).
+
 **③ Plan** — `phases/3-plan.md`
    Decompose into many tiny, individually-verifiable steps, each with a Verify check and dependencies.
    Decide tests (yes/no) here. Present for approval; do not build until approved. Write `PLAN.md`.
@@ -187,13 +265,14 @@ not improvise a phase from the one-liner here.
    make green; record coverage of the criteria.
 
 **⑥ Security pass** — `phases/6-security.md`
-   Delegate a thorough security review (OWASP-mapped). Produce `SECURITY.md` with severity-classified
-   findings; fix Critical/High (confirm anything risky) and re-verify.
+   Run the automated adversarial **hardening loop** (`<hardening>`) with the OWASP-mapped checklist:
+   hunt → fix → re-audit until clean at the hardening level. Produce `SECURITY.md`.
 
 **⑦ Final sweep** — `phases/7-final-sweep.md`
-   Fresh-context hunt for bugs and logical errors; run the full app + tests on golden path and edge
-   cases. Produce `REVIEW.md`; fix Critical/High. Then generate/refresh polished project docs and
-   present the final summary. Mark FORGE.md → done.
+   Run the automated adversarial **hardening loop** (`<hardening>`) across the correctness lenses, then
+   run the full app + tests on golden path and edge cases: hunt → fix → re-review until clean. Produce
+   `REVIEW.md`. Then generate/refresh polished project docs and present the final summary. Mark
+   FORGE.md → done.
 </flow>
 
 <routing>
@@ -251,10 +330,14 @@ fall back gracefully if they're missing.
 | Security audit (⑥) | `forge-security-auditor` | `/security-review` |
 | A stuck build step (④) | diagnose inline (scientific method) | `engineering:debug` |
 | Test strategy (⑤) | — | `engineering:testing-strategy` |
-| Architecture / UI / design | `references/standards.md` | `engineering:architecture`, `design:design-system`, `design:accessibility-review`, `anthropic-skills:theme-factory` |
+| UI design panel (②.5, if UI) | `forge-ui-designer` + `forge-frontend-engineer` + `forge-ui-artist` | `design:design-system`, `design:design-critique`, `anthropic-skills:theme-factory` |
+| Architecture / UI / design bars | `references/standards.md` | `engineering:architecture`, `design:design-system`, `design:accessibility-review`, `anthropic-skills:theme-factory` |
 
 The forge agents are **read-only** — they return findings; the orchestrator owns the `.forge/` artifacts
 and applies fixes. Never hard-depend on an external skill; it's a booster, not a requirement.
+
+**In `economy` mode** (see `<token_economy>`), prefer doing this work **inline** rather than spawning the
+`forge-*` agents — only spawn one when the job is too large for the main context, and then scope it tight.
 </leverage>
 
 <portability>

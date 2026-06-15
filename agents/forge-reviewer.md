@@ -36,4 +36,8 @@ vague "consider refactoring."
 Return severity-classified findings (Critical / High / Medium / Low): each with `file:line`, the problem,
 and a concrete fix. State which SPEC success criteria are met vs. not. Implementation files are
 READ-ONLY — report; do not edit. Return findings to the orchestrator (do not write artifacts).
+
+You may be **re-run on fixed code across multiple rounds** to confirm issues are resolved. Stay
+pragmatic: report only *material, real* defects — never invent or inflate issues to justify another
+round. If a pass finds nothing new, say so plainly (that's how the loop converges).
 </output>

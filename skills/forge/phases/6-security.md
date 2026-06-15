@@ -6,15 +6,19 @@ severity-classified findings, and fix the dangerous ones.
 **Inputs:** the built code, `.forge/SPEC.md` (data sensitivity, auth, integrations), `.forge/PROGRESS.md`.
 
 > Be a defensive reviewer here. The job is to find what's wrong, not to reassure. Assume inputs are
-> hostile and secrets leak unless proven otherwise.
+> hostile and secrets leak unless proven otherwise. This phase runs the automated adversarial
+> **hardening loop** (SKILL.md `<hardening>`) at the chosen hardening level — hunt → fix → re-audit until
+> clean — with no user check-ins.
 
 ---
 
-## 1. Review (delegate for thoroughness)
+## 1. Adversarial security hunt (round 1 of the loop)
 
 For `standard`/`deep`, run the audit with fresh eyes — prefer the `/security-review` skill if installed,
 otherwise spawn the `forge-security-auditor` agent (so the review isn't biased by having just written the
-code). For `quick`, a structured self-review against the checklist is acceptable. Give the reviewer the
+code). For `quick` — or any depth in `economy` mode — a structured, deliberately adversarial inline
+self-review against the checklist replaces the spawned auditor (in economy you trade fresh-eyes
+separation for tokens, so stay thorough to compensate; never skip the audit). Give the reviewer the
 file list (from PROGRESS.md / git diff), the SPEC's data-sensitivity / auth context, and this checklist.
 
 **Checklist — map findings to OWASP Top 10 where applicable:**
@@ -38,12 +42,18 @@ file list (from PROGRESS.md / git diff), the SPEC's data-sensitivity / auth cont
 Classify each finding **Critical / High / Medium / Low / Info** with: what it is, where (file:line),
 impact, and a concrete fix. Empty categories are fine — say "none found."
 
-## 3. Fix the dangerous ones
+## 3. Remediate — the automated hardening loop
 
-Fix **Critical and High** now (confirm before anything risky/irreversible). Re-verify the fix didn't
-break behavior (re-run the relevant step/test checks). Fix cheap, low-risk Medium/Low inline too;
-record the rest in SECURITY.md as recommendations — **don't stop to ask**, surface them in the final
-summary. Log fixes in PROGRESS.md.
+Run the adversarial **hardening loop** (SKILL.md `<hardening>`), automated, until it converges:
+- **Fix** Critical/High (plus Medium at `comprehensive`) at the root cause — confirm only for genuinely
+  risky/irreversible actions (`<autonomy>`); otherwise just do it. Log each fix in PROGRESS.md.
+- **Re-audit** the changed code: re-run the OWASP checklist on what you touched plus the relevant
+  test/step checks, to confirm the issue is gone and the fix introduced nothing new.
+- **Repeat** the hunt → fix → re-audit cycle until a full pass finds no new in-scope issues, or the
+  level's round cap is hit. Record any still-open items in SECURITY.md (severity + why deferred).
+
+Stay pragmatic: severity-gated, no chasing speculative issues, no looping past convergence. **Don't stop
+to ask** — surface anything left in the final summary.
 
 Update FORGE.md (check ⑥). → Proceed to `phases/7-final-sweep.md`.
 
@@ -65,5 +75,6 @@ Update FORGE.md (check ⑥). → Proceed to `phases/7-final-sweep.md`.
 {tool run + result}
 ```
 
-**Exit criteria:** SECURITY.md written; all Critical/High fixed and re-verified; remaining items recorded
-with a decision. → `phases/7-final-sweep.md`.
+**Exit criteria:** SECURITY.md written; the hardening loop converged (no new in-scope findings) or hit
+its round cap; all Critical/High fixed and re-audited; remaining items recorded with a decision. →
+`phases/7-final-sweep.md`.

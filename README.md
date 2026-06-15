@@ -140,6 +140,7 @@ Forge runs seven phases and writes an artifact for each into a `.forge/` folder 
 
 1. **Interview** → settles version control and interviews you across purpose, scope & non-goals, architecture, tech stack, data, integrations, and UI/theme — until there are no grey areas. → `SPEC.md`
 2. **Research & grounding** → verifies your stack and APIs against current sources; a hard gate surfaces *material* findings (deprecations, breaking changes, better options) before any planning. → `RESEARCH.md`
+2b. **UI Design** *(only if there's a UI)* → a platform-aware design team — UI specialist + staff frontend developer + UI artist — converges on the best modern UI **within your scope**; shown for sign-off at the plan gate. → `UI-DESIGN.md`
 3. **Plan** → decomposes the work into many tiny, individually-verifiable steps, each with an explicit verification; you approve it (the one deliberate go/no-go). → `PLAN.md`
 4. **Build** → executes the steps in order, **verifying every one** (typecheck/lint/run/functional/regression; browser + accessibility for UI) before moving on; commits per your chosen cadence. → `PROGRESS.md`
 5. **Tests** *(optional)* → tests derived from your success criteria and edge cases.
@@ -162,11 +163,14 @@ A documented, resumable trail in `.forge/`:
 | `SECURITY.md` | Severity-classified security findings |
 | `REVIEW.md` | Final-sweep bug/logic findings |
 
-Plus, on Claude Code, four read-only subagents do the heavy lifting and return findings: **`forge-researcher`**, **`forge-reviewer`**, **`forge-security-auditor`**, **`forge-verifier`**.
+Plus, on Claude Code, seven read-only subagents do the heavy lifting and return findings: **`forge-researcher`**, **`forge-reviewer`**, **`forge-security-auditor`**, **`forge-verifier`**, and the UI design team **`forge-ui-designer`**, **`forge-frontend-engineer`**, **`forge-ui-artist`**.
 
 ## Customization
 
 - **Depth** — pick `quick` / `standard` / `deep` at the start to scale how thorough each phase is.
+- **Economy** — pick `balanced` (default) or `economy`. Economy minimizes total token/cost spend — inline work instead of fresh-context subagents, one combined research pass, terser artifacts — *without* skipping any phase, the research gate, per-step verification, security, or the final sweep. `quick` + `economy` is the leanest run; pick `balanced` for security-sensitive builds so the audit keeps independent context.
+- **Hardening** — how hard the security pass and final sweep hunt for problems. An **automated adversarial find → fix → re-check loop** that runs with no check-ins until the code stops yielding material issues (or a round cap is hit). Level is `basic` / `standard` / `comprehensive` — defaults from depth, and you can raise it explicitly ("harden comprehensively" / "really hunt for bugs"). It's deliberately adversarial but pragmatic: severity-gated, no chasing phantom issues.
+- **UI design team** — for builds with a UI, a platform-aware design panel (UI specialist + staff frontend developer + UI artist) proposes the best modern UI within your stated scope, with throwaway mockups for visual-heavy apps; you sign off at the plan gate. It's then verified against an explicit **UI Acceptance Checklist** — modern, responsive (tested at real breakpoints), accessible (WCAG AA), all states, performant, polished — and fixed until it passes, in both the build and the final sweep. Tune it via the three `agents/forge-ui-*.md` or the UI bars in `standards.md`.
 - **Standards** — edit [`skills/forge/references/standards.md`](skills/forge/references/standards.md) to encode your own architecture/UI/design bars.
 - **Phases** — each phase is a small playbook in [`skills/forge/phases/`](skills/forge/phases); tweak any of them.
 - **Optional integrations** — when these skills are installed, Forge prefers them and falls back gracefully: `/verify`, `/run`, `/code-review`, `/security-review`, `engineering:debug`, `engineering:testing-strategy`, and design/architecture skills.
@@ -193,11 +197,11 @@ Plus, on Claude Code, four read-only subagents do the heavy lifting and return f
   marketplace.json     # lets the repo be added as a plugin marketplace
 skills/forge/
   SKILL.md             # orchestrator: principles, autonomy, flow, routing, portability
-  phases/1-7.md        # per-phase playbooks (lazy-loaded)
-  references/standards.md  # architecture + UI + design quality bars
+  phases/*.md          # per-phase playbooks, incl. conditional ui-design.md (lazy-loaded)
+  references/standards.md  # architecture + UI + design quality bars (+ platform-specific)
 agents/
-  forge-researcher.md  forge-reviewer.md
-  forge-security-auditor.md  forge-verifier.md
+  forge-researcher.md  forge-reviewer.md  forge-security-auditor.md  forge-verifier.md
+  forge-ui-designer.md  forge-frontend-engineer.md  forge-ui-artist.md   # UI design team
 dist/
   forge.md             # portable, single-file build for Codex/Cursor/other tools
 install.sh             # cross-tool installer

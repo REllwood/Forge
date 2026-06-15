@@ -10,7 +10,19 @@ that research and planning can proceed without re-asking the user.
 ## 1. Set depth
 
 If depth isn't already chosen, ask with `AskUserQuestion`: **quick / standard / deep** (see
-`<depth_levels>` in SKILL.md). Record it in FORGE.md. Scale the number and follow-up depth of the
+`<depth_levels>` in SKILL.md). Record it in FORGE.md.
+
+**Also pick economy** (see `<token_economy>` in SKILL.md): in the same `AskUserQuestion` batch, offer
+**balanced / economy** — default balanced; recommend economy when the user wants to minimize token/cost
+spend. Record it in FORGE.md too. (Economy changes *how* the pipeline spends tokens, never *what* it
+does — every phase, the research gate, per-step verification, security, and the final sweep still run.)
+
+**Hardening level** (see `<hardening>` in SKILL.md) — the intensity of the automated adversarial
+find→fix→re-check loop in ⑥/⑦ — **defaults from depth** (quick→basic, standard→standard,
+deep→comprehensive), so you don't need to ask. Honor an explicit request to raise it (e.g. "harden
+comprehensively" / "really hunt for bugs"). Record it in FORGE.md.
+
+Scale the number and follow-up depth of the
 questions below accordingly.
 
 ## 2. Orient (silent, ~30s)
@@ -70,6 +82,8 @@ Cover these dimensions (scaled by depth; skip any that are truly N/A, e.g. UI fo
    library (e.g. shadcn/ui, Tailwind, MUI) or hand-rolled; light/dark; accessibility expectations.
    Anchor questions and defaults in `references/standards.md` (the UI + design bars). The `theme-factory`,
    `design:design-system`, `design:accessibility-review`, and Shadcn UI tools can help here if available.
+   These answers are the **anchor for the UI Design pass (②.5)** — a design panel builds the best modern UI
+   *within* them, so gather references and preferences well here.
 9. **Constraints** — Performance/scale targets, deadlines, budget, hosting/deploy target, offline,
    compliance/privacy (PII, auth requirements).
 10. **Known risks & unknowns** — Anything the user already worries about or is unsure how to do.

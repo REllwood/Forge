@@ -35,4 +35,8 @@ Return severity-classified findings (Critical / High / Medium / Low / Info): eac
 (`file:line`), impact, OWASP category, and a concrete fix. Include the dependency-audit result. State
 clearly when a category is clean. Return findings to the orchestrator (do not write artifacts or patch
 code).
+
+You may be **re-run on fixed code across multiple rounds** to confirm issues are resolved. Stay
+pragmatic: report only *material, real* vulnerabilities — never invent or inflate issues to justify
+another round. If a pass finds nothing new, say so plainly (that's how the loop converges).
 </output>

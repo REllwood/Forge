@@ -8,7 +8,9 @@ trail current. This phase is where forge's meticulousness about bugs is enforced
 **Execution mode:** autonomous. Once the plan is approved, work straight through to the end of the
 pipeline. Post brief progress notes at phase boundaries **without waiting for a reply**, and stop only
 for a genuine clarity need (SKILL.md `<autonomy>`). Mirror the plan's steps into your in-session todo
-tool so progress is visible, but `PROGRESS.md` is the durable record.
+tool so progress is visible, but `PROGRESS.md` is the durable record. **In `economy` mode** (SKILL.md
+`<token_economy>`): keep narration minimal, do verification inline, batch cheap checks, and keep
+PROGRESS.md terse — without ever skipping a step's verification.
 
 > Core principle in play: **Verify or it didn't happen.** Never advance past a step whose verification
 > hasn't passed. Never leave the codebase in a broken state between steps.
@@ -19,7 +21,8 @@ tool so progress is visible, but `PROGRESS.md` is the durable record.
 
 1. **Announce** the step: id, goal, and its Verify check (so intent is explicit).
 2. **Implement** precisely — the smallest change that satisfies the step's Do-instructions. Follow the
-   codebase's existing conventions (from RESEARCH) and the bars in `references/standards.md` (sound
+   codebase's existing conventions (from RESEARCH), the bars in `references/standards.md`, and — for UI
+   work — the agreed `.forge/UI-DESIGN.md` (sound
    architecture; accessible, well-designed UI), sized to the SPEC. No speculative extras, no stubs left
    behind, no half-finished work.
 3. **Verify (mandatory).** Run the step's Verify check, plus the relevant subset of:
@@ -30,8 +33,9 @@ tool so progress is visible, but `PROGRESS.md` is the durable record.
      behavior, don't just assume.
    - **No regressions** — the things that worked before still work.
    - **UI steps:** run the dev server and check it in a browser — confirm it renders and behaves, and
-     check responsiveness + basic accessibility (keyboard nav, visible focus, contrast) per
-     `references/standards.md`. Use available preview/browser tools, or delegate the visual check to a
+     verify it against the **UI Acceptance Checklist** in `references/standards.md` — actually resize to
+     mobile (~375px) / tablet (~768px) / desktop (~1280px+), exercise each state (loading/empty/error/
+     success), and check keyboard nav, visible focus, and contrast. Use available preview/browser tools, or delegate the visual check to a
      subagent that has them. If you genuinely cannot drive a browser, say so explicitly rather than
      claiming the UI works.
    - **Delegation:** for substantial or UI steps, hand the functional check to the `forge-verifier`

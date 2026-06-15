@@ -57,10 +57,43 @@ architecture; `design:design-system`, `design:design-critique`, `design:accessib
 - **Polish to the references** the user named in SPEC — aim for a coherent, intentional product, not a
   template dump.
 
+## Platform-specific UI (the design panel adapts to the form factor)
+- **Web** — responsive/mobile-first with sane breakpoints; fast first paint, no layout shift;
+  SEO-friendly semantics; works for pointer **and** touch; respect browser back/forward.
+- **Mobile** — touch targets ≥ 44px; thumb-reachable primary actions; safe areas/notches; platform
+  conventions (iOS HIG / Material); gestures + native navigation; offline / poor-network states.
+- **Desktop** — keyboard shortcuts, comfortable density, multi-pane layouts, menus, window states.
+- **Game / HUD** — diegetic vs. overlay UI; controller + KB/M input; readability over flourish; a strict
+  performance budget; satisfying feedback ("juice") that never obscures play.
+- **TUI / CLI** — terminal constraints, color-safe palettes, keyboard-only flows, graceful narrow widths.
+
+## UI Acceptance Checklist — the definition of "done" for any UI
+A UI is not finished until it **passes every item**. The designer designs to this list, the panel signs
+off against it (②.5), and the build + final sweep **verify it and loop-fix until it passes** (anything
+still open after the cap is recorded as a known limitation). **Check, don't assume.**
+
+- [ ] **Modern** — current visual language matching the SPEC references; cohesive design-token system
+      (color/type/spacing/radius/shadow/motion) applied consistently; not dated or templated.
+- [ ] **Responsive** — verified at real breakpoints — mobile ~375px, tablet ~768px, desktop ~1280px+:
+      no overflow, clipping, or broken/overlapping layout; mobile-first; works for touch **and** pointer.
+- [ ] **Accessible (WCAG 2.1 AA)** — semantic HTML; full keyboard operability with visible focus; contrast
+      ≥ 4.5:1 (≥ 3:1 large text/UI); labelled inputs; alt text; ARIA only where needed; honors
+      `prefers-reduced-motion`.
+- [ ] **All states** — every view has loading, empty, error, and success states; async handled visibly.
+- [ ] **Feedback & affordance** — every action acknowledges itself; loading/disabled states; destructive
+      actions confirmed; forms have inline validation, clear errors, correct input types.
+- [ ] **Performance** — no layout shift; heavy/below-fold assets lazy-loaded; lean bundle; fast first paint.
+- [ ] **Polish** — clear visual hierarchy; consistent spacing/alignment to a grid; restrained palette +
+      intentional accent; ≤ 2 font families, comfortable measure; purposeful motion (~150–250ms); coherent
+      iconography; no misalignment / inconsistent radii / magic values.
+- [ ] **Platform-fit** — meets the platform-specific bars above (web / mobile / desktop / game / TUI).
+
 ---
 
 ## How the phases use this file
 - **Interview** — ask informed UI/design/architecture questions; propose good, accessible defaults.
+- **UI Design (②.5, if UI)** — the design panel (`forge-ui-designer` + `forge-frontend-engineer` +
+  `forge-ui-artist`) proposes the best modern UI *within* the user's scope, captured in `UI-DESIGN.md`.
 - **Plan** — sequence steps to establish the architecture early (scaffold layers; set up design tokens
   and base components before features).
 - **Build** — implement to these bars; UI step verification includes responsive + accessibility checks.

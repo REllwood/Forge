@@ -1,0 +1,17 @@
+# Forge runtime artifacts — created inside target projects when /forge runs,
+# never part of the plugin itself.
+.forge/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# In case tooling is added to this repo later.
+# NOTE: do not ignore dist/ — forge ships dist/forge.md (the portable single-file build).
+node_modules/
+build/
+*.log
