@@ -19,7 +19,9 @@ Group work into ordered **phases** (e.g. Scaffold, Data layer, Core feature A, C
 Integration, Polish). Within each phase, write **atomic steps**. Order strictly by dependency.
 
 **Front-load a walking skeleton:** the earliest steps should produce a minimal end-to-end thing that
-runs (even if it does almost nothing), so every later step builds on something verified-working.
+runs (even if it does almost nothing), so every later step builds on something verified-working. Put the
+**test harness** in it — the runner configured and one passing end-to-end smoke test — so every later
+step can add its tests from the start.
 
 **Architect it early (`references/standards.md`).** Sequence steps so the sound, right-sized structure is
 in place before features pile on: scaffold the layers / separation of concerns first, and for a UI set up
@@ -53,33 +55,45 @@ step works — not "run everything". Each plan phase then ends with a **Checkpoi
 lint / test suite, a regression check of what already worked, and (for UI) the UI Acceptance Checklist
 for any screen the phase completed. That's where the heavy verification lives.
 
-## 3. Decide tests
+Prefer a Verify that *is* an automated test the step adds — it then guards against regressions at every
+checkpoint for free. The step whose work completes a success criterion also writes that criterion's
+acceptance test.
 
-Ask the user (`AskUserQuestion`) whether they want automated tests, and if so what kind (unit /
-integration / e2e / a mix) and rough coverage expectation. Record the answer. If yes, the **Tests phase
-(⑤)** will be appended after the build phase; reflect that in the plan's phase list. Security (⑥) and
-Final sweep (⑦) are always included — list them as the closing phases.
+## 3. Write the test plan → TESTING.md
+
+Tests are always on; the layers were settled in SPEC's *Testing & CI*. Create `.forge/TESTING.md`
+(template below):
+- **Acceptance matrix** — every success criterion (AC-n) → the acceptance test that will prove it → the
+  step that writes it. A criterion with no planned test is a gap in the plan; fix it now.
+- **Strategy** — the layers and tools (from RESEARCH) and the one command that will run everything.
+- **Draft adversarial charter** — which attack categories apply to this build (hostile & boundary input,
+  abuse cases, property-based fuzzing, failure injection, concurrency & state, UI abuse, scale smoke,
+  mutation check) and their likely targets, so ⑦ starts with a target list.
+
+The closing phases are always the same — list them in the plan: Test suite (⑤), Security (⑥),
+Adversarial testing (⑦), Final sweep (⑧).
 
 ## 4. Present for approval — DO NOT build yet
 
 Write `.forge/PLAN.md`, then present a concise outline to the user (phases, step count against the
-depth's budget, and the headline steps) — **and, if `.forge/UI-DESIGN.md` exists, the UI direction with
+depth's budget, the headline steps, and the acceptance matrix in brief) — **and, if `.forge/UI-DESIGN.md` exists, the UI direction with
 it**: the design summary, any `.forge/ui-mockups/`, and any flagged departures from the user's stated
 preference, for sign-off here.
 Ask via `AskUserQuestion`: **Approve / Revise (tell me what) / Change depth.** Iterate on the plan (and
 the UI direction) until approved. Building before approval violates the pipeline.
 
 **This is the last routine stop.** It's a deliberate go/no-go because building on a wrong plan wastes the
-most work. After approval, forge runs **autonomously to done** (build → tests → security → final sweep),
-stopping only for a genuine clarity need (see SKILL.md `<autonomy>`). If the user has asked to run fully
-unattended, present the plan for visibility and proceed without waiting.
+most work. After approval, forge runs **autonomously to done** (build → test suite → security →
+adversarial testing → final sweep), stopping only for a genuine clarity need (see SKILL.md `<autonomy>`).
+If the run mode in FORGE.md is **unattended**, present the plan for visibility and proceed without
+waiting — the user already chose a one-shot run.
 
 On approval, update FORGE.md: check ③, Status → `build`, refresh Current position. → `phases/4-build.md`.
 
 ```markdown
 # PLAN — {title}
 
-**Phases:** ① {name} · ② {name} · … · Tests ({yes/no}) · Security · Final sweep
+**Phases:** ① {name} · ② {name} · … · Test suite · Security · Adversarial testing · Final sweep
 **Steps:** {n} (budget for {depth}: {range})
 **Verification:** targeted check per step; full suite + regression check at each phase checkpoint.
 
@@ -92,7 +106,7 @@ On approval, update FORGE.md: check ③, Status → `build`, refresh Current pos
 - **Goal:** {what done looks like}
 - **Files:** {paths to create/edit}
 - **Do:** {precise, concrete instructions — enough that execution is mechanical}
-- **Verify:** {exact check — command + expected result, or behavior to observe}
+- **Verify:** {exact check — ideally the automated test this step adds; command + expected result}
 - **Depends on:** {prior step ids, or —}
 - [ ] done
 
@@ -111,15 +125,43 @@ On approval, update FORGE.md: check ③, Status → `build`, refresh Current pos
 ## Phase B — {name}
 …
 
-## Phase T — Tests        ← only if chosen
-{step(s) to set up framework, write tests for each success criterion, make green}
+## Phase T — Test suite
+{placeholder — executed per phases/5-tests.md; acceptance matrix in TESTING.md}
 
 ## Phase S — Security
 {placeholder — executed per phases/6-security.md}
 
+## Phase X — Adversarial testing
+{placeholder — executed per phases/7-adversarial.md; draft charter in TESTING.md}
+
 ## Phase F — Final sweep
-{placeholder — executed per phases/7-final-sweep.md}
+{placeholder — executed per phases/8-final-sweep.md}
+```
+
+```markdown
+# TESTING — {title}
+
+## Strategy
+- Layers: {unit · integration · e2e ({tool}) · property-based ({library})}
+- Run everything: `{one command}`
+- CI: {workflow path | none}
+
+## Acceptance matrix
+| Criterion | Test | Written in step | Status |
+|-----------|------|-----------------|--------|
+| AC-1 {short} | {file::test name} | {A.3} | planned / passing |
+
+## Adversarial charter        ← drafted here, finalised and run in ⑦
+| Category | Targets | Attacks | Result |
+|----------|---------|---------|--------|
+
+## Mutation check             ← filled in at ⑦
+- {file:line — the change} → caught by {test} | survived → {test added}
+
+## Runs
+- {YYYY-MM-DD}: {n} tests · {pass/fail} · second run identical {yes/no}
 ```
 
 **Exit criteria:** PLAN.md written with right-sized, individually-verifiable steps within the step
-budget and a checkpoint per phase; tests decision recorded; user approved; FORGE.md updated. → Proceed to `phases/4-build.md`.
+budget and a checkpoint per phase; TESTING.md written (acceptance matrix covering every criterion,
+strategy, draft charter); user approved (or the plan presented, in unattended mode); FORGE.md updated. → Proceed to `phases/4-build.md`.

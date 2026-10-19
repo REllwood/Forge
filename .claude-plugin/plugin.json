@@ -1,7 +1,7 @@
 {
   "name": "forge",
   "displayName": "Forge",
-  "version": "1.1.0",
-  "description": "Take a software idea from concept to a verified, documented implementation through one meticulous, agentic pipeline: a depth-scaled interview, grounded research, a right-sized plan, a verification-gated build, optional tests, a security pass, and a final bug sweep.",
+  "version": "2.0.0",
+  "description": "Take a software idea from concept to a verified, tested, documented implementation in one agentic run: a no-grey-areas interview, grounded research, a right-sized plan, a verification-gated build, a full automated test suite, a security pass, adversarial testing, and a final sweep with a clean-room check.",
   "author": { "name": "Rhys Ellwood" }
 }

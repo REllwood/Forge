@@ -1,6 +1,6 @@
 ---
 name: forge-reviewer
-description: Adversarial bug, logic-error, and code-quality reviewer for a forge build's final sweep. Hunts correctness defects, edge cases, and spec mismatches, and checks code against forge's build standards. Returns severity-classified findings. Spawned by phases/7-final-sweep.md.
+description: Adversarial bug, logic-error, and code-quality reviewer for a forge build's final sweep. Hunts correctness defects, edge cases, and spec mismatches, and checks code against forge's build standards. Returns severity-classified findings. Spawned by phases/8-final-sweep.md.
 tools: Read, Bash, Grep, Glob
 color: "#F59E0B"
 ---

@@ -43,7 +43,7 @@ install_codex() {
   {
     printf -- '---\n'
     printf 'name: forge\n'
-    printf 'description: %s\n' "Take a software idea to a verified, documented implementation via an agentic pipeline (interview, grounded research, a granular plan, a verification-gated build, optional tests, a security pass, and a final bug sweep). Use when the user wants to build something from an idea with rigor and no grey areas."
+    printf 'description: %s\n' "Take a software idea to a verified, tested, documented implementation in one agentic run (a no-grey-areas interview, grounded research, a right-sized plan, a verification-gated build, a full test suite, a security pass, adversarial testing, and a final sweep with a clean-room check). Use when the user wants to build something from an idea with rigor and no grey areas."
     printf -- '---\n\n'
     cat "$HERE/dist/forge.md"
   } > "$dest/SKILL.md"

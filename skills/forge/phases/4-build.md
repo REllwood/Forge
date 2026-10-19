@@ -22,13 +22,15 @@ PROGRESS.md terse — without ever skipping a step's verification.
 1. **Announce** the step in one line: id, goal, and its Verify check (so intent is explicit).
 2. **Implement** precisely — the smallest change that satisfies the step's Do-instructions. Follow the
    codebase's existing conventions (from RESEARCH), the bars in `references/standards.md`, and — for UI
-   work — the agreed `.forge/UI-DESIGN.md` (sound
-   architecture; accessible, well-designed UI), sized to the SPEC. No speculative extras, no stubs left
-   behind, no half-finished work.
-3. **Verify (mandatory, targeted).** Run the step's Verify check and **functionally exercise the path
-   this step created** — actually run it and observe the expected behaviour, don't just assume. Add a
-   compile/typecheck of the touched code when it's cheap (incremental build, single-file check). The
-   full suite and regression check wait for the phase checkpoint (below).
+   work — the agreed `.forge/UI-DESIGN.md` (sound architecture; accessible, well-designed UI), sized to
+   the SPEC. No speculative extras, no stubs left behind, no half-finished work. **Write the step's tests
+   as part of the step** — unit tests for the logic it adds, and the acceptance test if it completes a
+   success criterion (per TESTING.md's matrix). Keep them focused; ⑤ fills in the remaining layers.
+3. **Verify (mandatory, targeted).** Run the step's Verify check (ideally the tests it just added) and
+   **functionally exercise the path this step created** — actually run it and observe the expected
+   behaviour, don't just assume. Add a compile/typecheck of the touched code when it's cheap
+   (incremental build, single-file check). The full suite and regression check wait for the phase
+   checkpoint (below).
    - **UI steps:** load it in the browser and confirm the new piece renders and works. The full UI
      Acceptance Checklist waits for the checkpoint, not every step. If you genuinely cannot drive a
      browser, say so explicitly rather than claiming the UI works.
@@ -37,9 +39,11 @@ PROGRESS.md terse — without ever skipping a step's verification.
    each testing a *different* hypothesis (a scientific-method pass, or the `engineering:debug` skill if
    installed). If the same error returns after a fix, the hypothesis was wrong — change approach, don't
    repeat it. After 3 attempts, restore the last good state and **checkpoint with the user** with what
-   you tried (don't proceed on a broken state, and don't keep looping).
+   you tried (don't proceed on a broken state, and don't keep looping). Never delete, skip or loosen a
+   test to get green.
 5. **Record:** check the step's box in `PLAN.md` and append a short entry to `.forge/PROGRESS.md`
-   (template below) — what you did, files touched, the verify result, and any deviation. The PLAN.md
+   (template below) — what you did, files touched, the verify result, and any deviation. When a step's
+   acceptance test passes, mark that criterion's row in TESTING.md. The PLAN.md
    checkboxes are the mid-phase resume pointer; FORGE.md only needs updating at checkpoints.
 6. **Deviation handling:** if reality differs from the plan (a step is wrong, missing, or a better path
    appears), adapt — and **log the deviation and rationale** in PROGRESS.md. If scope shifts materially,
@@ -106,5 +110,5 @@ Honor the VCS decision recorded in SPEC:
 ```
 
 **Exit criteria:** every build step checked off in PLAN.md and logged in PROGRESS.md with a passing
-verify; every phase checkpoint passed; codebase in a working state. Update FORGE.md (check ④). → If tests were chosen,
-`phases/5-tests.md`; otherwise `phases/6-security.md`.
+verify and its tests; every phase checkpoint passed; codebase in a working state. Update FORGE.md
+(check ④). → `phases/5-tests.md`.

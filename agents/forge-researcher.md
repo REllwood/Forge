@@ -24,6 +24,8 @@ if it lists files or research questions, treat those as your scope.
 - Cross-check conflicting sources; prefer the most authoritative and most recent.
 - Be specific: pin exact current stable versions; name the exact methods/endpoints and whether they
   still exist.
+- **Test tooling** (when asked): the current test runner, end-to-end tool, property-based testing
+  library, and mutation tool for the stack — versions, fit, and any setup gotchas.
 </method>
 
 <adversarial_stance>

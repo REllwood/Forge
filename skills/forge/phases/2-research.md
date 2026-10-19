@@ -20,6 +20,9 @@ From SPEC, enumerate what must be verified. Typically:
   pricing tier limits, recent deprecations, whether the specific methods in our design still exist.
 - **Feasibility** of the overall approach and any novel/uncertain part.
 - **Better alternatives** to any choice that looks risky, unmaintained, or ill-fitting.
+- **Test tooling** for the stack: the test runner, an end-to-end tool (e.g. Playwright for web UIs), a
+  property-based testing library, and a mutation tool if one exists — current versions and fit. The test
+  suite (⑤) and adversarial testing (⑦) build on these.
 - For **existing codebases**: reusable patterns, conventions, and assets we must align with.
 
 ## 2. Spawn research in parallel (scale by depth)

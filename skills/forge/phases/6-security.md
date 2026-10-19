@@ -3,7 +3,8 @@
 **Goal:** Find and call out security issues before this is considered done. Produce `SECURITY.md` with
 severity-classified findings, and fix the dangerous ones.
 
-**Inputs:** the built code, `.forge/SPEC.md` (data sensitivity, auth, integrations), `.forge/PROGRESS.md`.
+**Inputs:** the built code, `.forge/SPEC.md` (data sensitivity, auth, integrations), `.forge/PROGRESS.md`,
+`.forge/TESTING.md` (the suite and its one command).
 
 > Be a defensive reviewer here. The job is to find what's wrong, not to reassure. Assume inputs are
 > hostile and secrets leak unless proven otherwise. This phase runs the automated adversarial
@@ -12,7 +13,15 @@ severity-classified findings, and fix the dangerous ones.
 
 ---
 
-## 1. Adversarial security hunt (round 1 of the loop)
+## 1. Threat model (lite)
+
+Before hunting, write a short threat model at the top of SECURITY.md: the **assets** worth protecting
+(data, secrets, money, availability), every **entry point** (routes, commands, uploads, webhooks,
+messages, files read), the **trust boundaries**, and the **roles** with what each may do. The hunt walks
+every entry point, and ⑦ Adversarial testing turns this list into executable abuse cases. Keep it to a
+screen — it's a map, not a report.
+
+## 2. Adversarial security hunt (round 1 of the loop)
 
 For `standard`/`deep`, run the audit with fresh eyes — prefer the `/security-review` skill if installed,
 otherwise spawn the `forge-security-auditor` agent (so the review isn't biased by having just written the
@@ -37,16 +46,17 @@ file list (from PROGRESS.md / git diff), the SPEC's data-sensitivity / auth cont
   overly broad permissions, no rate limiting on sensitive endpoints.
 - **Error handling:** stack traces or internals leaked to users.
 
-## 2. Classify & write SECURITY.md
+## 3. Classify & write SECURITY.md
 
 Classify each finding **Critical / High / Medium / Low / Info** with: what it is, where (file:line),
 impact, and a concrete fix. Empty categories are fine — say "none found."
 
-## 3. Remediate — the automated hardening loop
+## 4. Remediate — the automated hardening loop
 
 Run the adversarial **hardening loop** (SKILL.md `<hardening>`), automated, until it converges:
 - **Fix** Critical/High (plus Medium at `comprehensive`) at the root cause — confirm only for genuinely
-  risky/irreversible actions (`<autonomy>`); otherwise just do it. Log each fix in PROGRESS.md.
+  risky/irreversible actions (`<autonomy>`); otherwise just do it. Each fix lands with a **regression
+test** — an exploit test that fails before the fix and passes after. Log each fix in PROGRESS.md.
 - **Re-audit** the changed code: re-run the OWASP checklist on what you touched plus the relevant
   test/step checks, to confirm the issue is gone and the fix introduced nothing new. Keep it
   diff-scoped — hand the auditor only the files the fixes changed (plus their direct callers), never the
@@ -57,7 +67,7 @@ Run the adversarial **hardening loop** (SKILL.md `<hardening>`), automated, unti
 Stay pragmatic: severity-gated, no chasing speculative issues, no looping past convergence. **Don't stop
 to ask** — surface anything left in the final summary.
 
-Update FORGE.md (check ⑥). → Proceed to `phases/7-final-sweep.md`.
+Update FORGE.md (check ⑥). → Proceed to `phases/7-adversarial.md`.
 
 ```markdown
 # SECURITY — {title}
@@ -65,18 +75,24 @@ Update FORGE.md (check ⑥). → Proceed to `phases/7-final-sweep.md`.
 ## Summary
 {posture in 2–3 sentences; counts by severity}
 
+## Threat model
+- **Assets:** {what's worth protecting}
+- **Entry points:** {routes / commands / uploads / webhooks / files}
+- **Trust boundaries & roles:** {who can do what, where untrusted input crosses in}
+
 ## Findings
 ### [Critical|High|Medium|Low|Info] {title}
 - **Where:** {file:line}
 - **Issue:** {what & why it's exploitable}
 - **OWASP:** {category, if applicable}
 - **Fix:** {concrete remediation}
+- **Regression test:** {file::test name, or why none is possible}
 - **Status:** fixed | recommended (deferred) | accepted-risk
 
 ## Dependency audit
 {tool run + result}
 ```
 
-**Exit criteria:** SECURITY.md written; the hardening loop converged (no new in-scope findings) or hit
-its round cap; all Critical/High fixed and re-audited; remaining items recorded with a decision. →
-`phases/7-final-sweep.md`.
+**Exit criteria:** SECURITY.md written with its threat model; the hardening loop converged (no new
+in-scope findings) or hit its round cap; all Critical/High fixed, re-audited and covered by a regression
+test; remaining items recorded with a decision. → `phases/7-adversarial.md`.
