@@ -137,25 +137,121 @@ Use [`dist/forge.md`](dist/forge.md) as a custom command or system prompt, or fo
 /forge resume                       # continue an in-progress build
 /forge status                       # show where a build is
 /forge restart                      # archive the current build and start over
+/forge abandon                      # archive the current build and stop
 ```
 
-**What the first run looks like:** Forge asks you to pick a depth (`quick` / `standard` / `deep`), settles version control and CI, then interviews you — proposing sensible defaults so you can mostly confirm rather than compose. Small decisions arrive as one **defaults sheet** you can accept in a click. It checks the build has everything it'll need (credentials or mocks, tooling, test data, permissions for routine actions) so it won't have to stop later, then asks whether you want to **review the plan** or run **unattended**. It researches your stack and surfaces anything surprising (a deprecated API, a better library) for your call. Then it plans and builds autonomously — writing tests as it goes, completing the test suite, running a security pass and adversarial testing, and finishing with a final sweep and a clean-room run — pausing only when it genuinely needs you.
+**What a run looks like:** a short interview (mostly confirming recommended answers), an optional plan approval, then Forge builds, tests, attacks and documents the program on its own. [How it works](#how-it-works) walks through every step.
 
 ## How it works
 
-Forge runs eight phases and writes an artifact for each into a `.forge/` folder in your project:
+You type one command. Forge interviews you, then builds, tests, attacks and documents the program on its own. Here's every step: what you do, what Forge does, and what it leaves behind in the `.forge/` folder.
 
-1. **Interview** → settles version control and CI, then works through a question bank for your kind of project — purpose, testable success criteria, scope & non-goals, architecture, tech stack, data, integrations, UI/theme and edge-case behaviour — plus a defaults sheet, a build-readiness check and a pre-mortem, until there are no grey areas. → `SPEC.md`
-2. **Research & grounding** → verifies your stack and APIs against current sources; a hard gate surfaces *material* findings (deprecations, breaking changes, better options) before any planning. → `RESEARCH.md`
-   - **2b. UI Design** *(only if there's a UI)* → a platform-aware design team — UI specialist + staff frontend developer + UI artist — converges on the best modern UI **within your scope**; shown for sign-off at the plan gate. → `UI-DESIGN.md`
-3. **Plan** → decomposes the work into right-sized, individually-verifiable steps (within a step budget set by depth), each phase closed by a checkpoint, and maps every success criterion to the acceptance test that will prove it; you approve it (the one deliberate go/no-go — skipped if you chose unattended). → `PLAN.md` + `TESTING.md`
-4. **Build** → executes the steps in order, writing each step's tests as part of the step and **verifying every one** before moving on, with a full checkpoint (typecheck/lint/tests/regression; browser + accessibility for UI) at each phase boundary; commits per your chosen cadence. → `PROGRESS.md`
-5. **Test suite** → completes a full automated suite: an acceptance test for every success criterion, integration tests across the real seams, an end-to-end golden path, and edge cases where the risk is real. One command, no flaky tests, CI if you chose it. → `TESTING.md`
-6. **Security pass** → a lightweight threat model and an OWASP-mapped audit; fixes Critical/High, each with an exploit regression test. → `SECURITY.md`
-7. **Adversarial testing** → tries to break the build for real with executable attacks: hostile and boundary inputs, abuse cases, property-based fuzzing, failure injection, concurrency, and a mutation check that proves the tests actually catch bugs. Every attack becomes a permanent test; every break gets fixed. → `TESTING.md`
-8. **Final sweep** → a fresh-context hunt for bugs and logic errors, runs the app on the golden path and key edge cases, ships clean docs, then does a **clean-room run** from a fresh checkout following only the README, and checks the definition of done. → `REVIEW.md`
+### At a glance
 
-After the interview it's **agentic** — it runs straight through, stopping only for genuine ambiguity, a true blocker, a risky/irreversible action, or a material scope change. A build is only **done** when every success criterion has a passing test, the suite passes twice from one command, every Critical/High finding is fixed with a regression test, and the clean-room run works.
+| # | Step | What happens | What you do | Writes |
+|---|------|--------------|-------------|--------|
+| 1 | **Interview** | Settles every decision up front | Answer questions — most come with a recommended answer | `SPEC.md` |
+| 2 | **Research** | Checks your stack against current, real-world sources | Decide only if something important turns up | `RESEARCH.md` |
+| 2b | **UI design** | A design panel agrees the look *(UI projects only)* | Review it alongside the plan | `UI-DESIGN.md` |
+| 3 | **Plan** | Breaks the work into steps and plans the tests | Approve it (skipped in unattended mode) | `PLAN.md`, `TESTING.md` |
+| 4 | **Build** | Builds step by step, writing tests as it goes | Nothing | `PROGRESS.md` |
+| 5 | **Test suite** | Completes the automated tests | Nothing | `TESTING.md` |
+| 6 | **Security** | Threat model and security audit; fixes the serious issues | Nothing | `SECURITY.md` |
+| 7 | **Adversarial testing** | Tries to break it with real attacks; fixes what breaks | Nothing | `TESTING.md` |
+| 8 | **Final sweep** | Bug hunt, docs, clean-room run, definition-of-done check | Read the summary | `REVIEW.md` + docs |
+
+### Step by step
+
+#### 1. Interview — no grey areas
+
+**You:** answer a few rounds of questions. Most come with a recommended answer, so you can mostly confirm rather than write from scratch.
+
+**Forge:**
+1. Asks you to pick a **depth** (`quick` / `standard` / `deep`) and **economy** (`balanced` / `economy`).
+2. Settles **version control** — Git + GitHub, git only, none, or an existing repo — plus repo visibility, how often to push, and whether to add a **CI** workflow.
+3. Interviews you from a **question bank** for your kind of project (web app, API, CLI, library, mobile, data pipeline, game, AI feature): purpose, users, scope and non-goals, architecture, tech stack, data, integrations, UI and theme, and constraints. Every **success criterion** is written as *Given / When / Then* so it can become a test.
+4. Shows a **defaults sheet** — the small decisions it would otherwise guess (duplicate entries, deleting linked records, time zones, rounding, limits, error messages, who sees what), each with a recommended answer. Accept them all, or change the ones you care about.
+5. Runs a **build-readiness check** so it never has to stop mid-build: credentials for each external service (or a sandbox key or mock instead), the tools your stack needs, test data, and permission for routine actions such as installing packages, setting up a local database and pushing commits.
+6. Runs a **pre-mortem** — walks each feature from start to finish looking for anything it would still have to guess — and asks about whatever it finds.
+7. Shows you a summary of the spec to confirm, and asks for the **run mode**: *review* (approve the plan before building) or *unattended* (go straight through to done).
+
+**You get:** `SPEC.md` — every decision, locked in.
+
+#### 2. Research — grounded in reality
+
+**Forge:** checks every library, API and assumption in the spec — including the test tools it'll use — against current official docs, changelogs and security advisories, not its training memory. It settles small findings itself. If something important turns up — a deprecated API, a breaking change, a clearly better option, a licensing or security problem — it stops and asks you before planning.
+
+**You get:** `RESEARCH.md` — verified versions, gotchas, and any decisions you made.
+
+#### 2b. UI design *(only if there's a user interface)*
+
+**Forge:** a design panel — a UI specialist, a senior frontend developer and a UI artist — agrees on a modern, accessible design within the style you asked for. Visual-heavy apps get throwaway HTML mockups. You see it alongside the plan; there's no separate stop.
+
+**You get:** `UI-DESIGN.md`, plus mockups in `.forge/ui-mockups/` where useful.
+
+#### 3. Plan — including the test plan
+
+**Forge:** breaks the work into right-sized steps (about one commit each, within a step budget set by depth), grouped into phases that each end in a full checkpoint. The first steps produce a minimal working version with the test setup already in place. It maps every success criterion to the test that will prove it, and drafts the list of attacks for step 7.
+
+**You:** approve or adjust the plan. This is the last routine stop — in *unattended* mode, Forge shows you the plan and keeps going.
+
+**You get:** `PLAN.md` and `TESTING.md`.
+
+#### 4. Build — verified step by step
+
+**Forge:** for every step, writes the code **and its tests**, runs a targeted check, and actually exercises what it built before moving on. At the end of each phase it runs a full checkpoint: typecheck, lint, the whole test suite, a check that nothing earlier broke and, for screens, a responsive and accessibility check in a browser. If something fails, it gets three attempts, each testing a different idea, then stops and tells you rather than looping. Commits and pushes happen on the schedule you chose.
+
+**You get:** working code, and `PROGRESS.md` — a log of every step and how it was verified.
+
+#### 5. Test suite — complete and trustworthy
+
+**Forge:** fills in the gaps — an acceptance test for every success criterion, integration tests for the real connections (database, files, external APIs), an end-to-end test of the main user journey, and edge-case tests wherever the logic is risky. Everything runs from one command, and it runs twice to catch flaky tests. If you chose CI, it adds the workflow.
+
+**You get:** a full automated test suite, recorded in `TESTING.md`.
+
+#### 6. Security pass
+
+**Forge:** maps what's worth protecting and every way in, then audits the code against the OWASP Top 10, hunts for leaked secrets, and runs a dependency audit. Critical and high-severity issues are fixed, each with a test proving the exploit no longer works.
+
+**You get:** `SECURITY.md`.
+
+#### 7. Adversarial testing — try to break it
+
+**Forge:** attacks its own work with real, runnable tests — hostile and boundary inputs, attempts to reach other users' data, property-based fuzzing, simulated outages and slow services, simultaneous requests, UI abuse, and a **mutation check** that plants small bugs to prove the tests actually catch them. Every attack is kept as a permanent test, and anything that breaks is fixed. How far it goes depends on the hardening level.
+
+**You get:** a stronger test suite, with the attack results in `TESTING.md`.
+
+#### 8. Final sweep — prove it's done
+
+**Forge:** a fresh-eyes hunt for bugs and logic errors, then runs the app for real. It writes the README and architecture notes, commits, then does a **clean-room run**: a fresh copy of the project, set up using only the README, must install, pass the tests and run. Finally it checks the definition of done (below) and wraps up.
+
+**You get:** `REVIEW.md`, polished docs, and a summary — what was built, how to run it, how it was tested, and any known limitations.
+
+### When Forge stops to ask you
+
+After the interview, Forge runs on its own. It only stops for:
+- a decision with real trade-offs that the spec doesn't settle;
+- something only you can provide, such as a credential or access;
+- anything risky or irreversible — deploying, deleting, spending money, force-pushing;
+- a discovery that materially changes what's being built or what it'll cost.
+
+Everything else it decides, records in `.forge/`, and keeps going.
+
+### What "done" means
+
+A build is only finished when:
+- every success criterion has a passing automated test;
+- the full suite passes from one command, twice in a row;
+- typecheck, lint and the dependency audit are clean;
+- every critical and high-severity finding is fixed and has a test;
+- a fresh copy, set up from the README alone, installs, passes and runs;
+- the docs are written and CI (if you chose it) is green.
+
+Anything that can't meet that bar is listed as a known limitation, with the reason.
+
+### Stopping and resuming
+
+Everything Forge knows lives in `.forge/`, so a build survives a closed session or a full context reset. Run `/forge status` to see where it's up to, and `/forge resume` to carry on from exactly that point.
 
 ## What you get
 
