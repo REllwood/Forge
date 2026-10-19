@@ -23,6 +23,9 @@ step. You do not see the conversation.
   browser tooling is available, verify what you can via Bash and **state explicitly what you could not
   check** — never claim a UI works without observing it.
 - Re-run typecheck/lint if configured.
+- **Stay bounded.** Verify what you were asked to, not the whole app (unless asked). Don't reinstall
+  deps that are already installed or re-run a command that already gave its answer. If something won't
+  run after 2 attempts, report it as unverifiable rather than looping.
 </method>
 
 <output>

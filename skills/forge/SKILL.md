@@ -2,8 +2,8 @@
 name: forge
 description: >-
   Take a software idea from concept to a verified, documented implementation through one
-  meticulous end-to-end pipeline: a depth-scaled interview, grounded research, an
-  ultra-granular plan, a checkpoint-gated build with per-step verification, optional tests,
+  meticulous end-to-end pipeline: a depth-scaled interview, grounded research, a
+  right-sized plan, a checkpoint-gated build with per-step verification, optional tests,
   a security pass, and a final bug sweep. Use when the user wants to BUILD something from an
   idea and wants rigor with no grey areas — e.g. "/forge <idea>", "I want to build X",
   "help me design and ship this properly", "take this from idea to working code". Not for
@@ -34,7 +34,7 @@ combining the rigor of a phased engineering workflow with the conversational fee
    ▼
  ① INTERVIEW ──▶ ② RESEARCH ──▶ ③ PLAN ──▶ ④ BUILD ──▶ ⑤ TESTS? ──▶ ⑥ SECURITY ──▶ ⑦ FINAL SWEEP ──▶ done
    SPEC.md       RESEARCH.md     PLAN.md    PROGRESS.md   (opt)        SECURITY.md     REVIEW.md + docs
-   (no grey      (ground every   (tiny      (verify EVERY            (OWASP, fix      (bugs, logic,
+   (no grey      (ground every   (lean      (verify EVERY            (OWASP, fix      (bugs, logic,
     areas)        assumption)     steps)     step before moving)      criticals)       run the app)
 ```
 
@@ -51,10 +51,14 @@ These six principles override convenience at every step. When a shortcut tempts 
 2. **Ground everything in reality.** Do not trust training memory about library versions, API
    surfaces, or "best practice." Verify against current primary sources during research. Surprises
    (deprecations, breaking changes, better tools) are surfaced to the user BEFORE planning.
-3. **Small steps, deep detail.** A great plan is many tiny, individually-verifiable steps — not few
-   big ones. The more granular the step and the more precise its instructions, the better.
-4. **Verify or it didn't happen.** Every build step ends with a concrete check that proves it works.
-   Never proceed on a broken or unverified state. Meticulousness about bugs is the whole point.
+3. **Right-sized steps, deep detail.** A great plan is a sequence of coherent, individually-verifiable
+   increments — each roughly one focused commit. Put the depth into each step's instructions and its
+   Verify check, not into ever-smaller steps: every step carries fixed overhead (implement, verify, log,
+   commit), so over-splitting burns tokens without adding rigour.
+4. **Verify or it didn't happen.** Every build step ends with a targeted check that proves it works, and
+   every plan phase ends with a full checkpoint (typecheck, lint, tests, no regressions). Never proceed
+   on a broken or unverified state. Meticulousness about bugs is the whole point — proportionate
+   verification, not repeated verification.
 5. **Document as you go.** The `.forge/` artifact trail is the source of truth and makes the build
    resumable across context resets. Keep it current; it is not optional paperwork.
 6. **Build to a standard.** Sound architecture — and, for anything with a UI, an accessible and
@@ -107,7 +111,7 @@ every build fully documented and resumable.
   RESEARCH.md    ← grounded findings, version pins, gotchas, resolved forks
   UI-DESIGN.md   ← (conditional) UI design contract — only when the build has a UI
   ui-mockups/    ← (conditional) throwaway HTML mockups for visual-heavy UIs
-  PLAN.md        ← ultra-granular steps with checkboxes
+  PLAN.md        ← right-sized steps with checkboxes + a checkpoint per phase
   PROGRESS.md    ← running build log: did / files / verify result / deviations
   SECURITY.md    ← severity-classified security findings + remediation
   REVIEW.md      ← final-sweep bug/logic findings + resolution
@@ -150,16 +154,51 @@ Template:
 <depth_levels>
 Depth is chosen at the start of the interview and scales the whole pipeline. Default is **standard**.
 
-- **quick** — ~3–5 essential questions, light single-pass research, plan with reasonable granularity,
+- **quick** — ~3–5 essential questions, light single-pass research, a short plan (~4–10 steps),
   standard security + final sweep. For small, well-understood builds.
-- **standard** — ~8–12 questions across all relevant dimensions, solid parallel research, granular
-  plan, full security + final sweep. The default.
+- **standard** — ~8–12 questions across all relevant dimensions, solid parallel research, a solid plan
+  (~8–20 steps), full security + final sweep. The default.
 - **deep** — exhaustive questioning with follow-ups until zero grey areas remain, multi-agent deep
-  research with primary-source grounding, ultra-granular plan, deep security audit + deep final
-  sweep. For ambitious or high-stakes builds.
+  research with primary-source grounding, a detailed plan (~15–35 steps, with richer instructions and
+  checks per step), deep security audit + deep final sweep. For ambitious or high-stakes builds.
 
-A higher depth never skips a phase — it makes each phase more thorough.
+A higher depth never skips a phase — it makes each phase more thorough. Depth buys more thorough
+*thinking* per step; it never licenses more decomposition, more retries, or more loop rounds than
+`<loop_guards>` allows.
 </depth_levels>
+
+<loop_guards>
+**Loop guards** keep forge thorough without letting it spiral — over-splitting work, retrying the same
+fix, or re-reviewing the whole codebase every round. They apply at **every** depth, economy, and
+hardening level, and they're binding: when one trips, add a one-line note to PROGRESS.md and move on (or
+escalate per `<autonomy>`).
+
+1. **Step budget.** Plans stay within the depth's step range (quick ~4–10 · standard ~8–20 · deep
+   ~15–35) for a typical v1. A genuinely large SPEC may exceed it — say so with a one-line reason at the
+   plan gate. Otherwise merge steps until the plan fits.
+2. **Decompose once.** Decomposition happens in the plan, not during the build. If a step proves too big
+   mid-build, split it **once** into at most 3 steps, log the deviation, and carry on. Never split a
+   split, and never write a sub-plan for a single step.
+3. **Fix-attempt cap.** At most **3 attempts** at any one failure (a failing step, test, or check), each
+   testing a *different* hypothesis. If the same error comes back after a fix, the hypothesis was wrong —
+   change approach rather than repeating it. After 3, stop: restore the last good state and checkpoint
+   with the user (it's now a true blocker), summarising what was tried.
+4. **No-progress breaker.** Any loop — fixing, test-to-green, hardening rounds, design-panel rounds —
+   ends as soon as an iteration produces no material change or new in-scope finding. Two iterations
+   circling the same issue means stop and surface it, not try again.
+5. **Tiered verification.** A targeted check per step (the step's Verify line + exercising the path it
+   created); the full typecheck / lint / test suite / regression check at each **phase checkpoint**; the
+   full UI Acceptance Checklist once per completed screen and again in the final sweep. Never run the
+   full suite or the full UI checklist after every step.
+6. **Diff-scoped re-checks.** Round 1 of a review or audit covers the whole build; every later round
+   re-reviews **only the code the fixes changed** (plus its direct callers) and re-runs only the affected
+   checks. One full test + golden-path run then closes the phase.
+7. **Spawn sparingly.** Subagents are for phase-level jobs, never per build step. One reviewer/auditor
+   per hardening round covers every lens rather than one agent per lens (a UI build adds only the two UI
+   specialists); `forge-verifier` runs at phase checkpoints, not after each step. Hand every agent the specific files to read — never "the whole
+   repo".
+8. **Read once.** Don't re-read files already in context; read only the slice you need.
+</loop_guards>
 
 <token_economy>
 **Economy** is a separate knob from depth, chosen at the start and recorded in FORGE.md. Default is
@@ -187,6 +226,7 @@ the final sweep, and never lowers the "no grey areas / verify or it didn't happe
      hide which step failed — still functionally exercise every step.
 
 `quick` + `economy` is the leanest possible run; `deep` + `economy` means thorough work done frugally.
+Economy stacks on top of `<loop_guards>`, which apply in every mode.
 If a build is security-sensitive or high-stakes, prefer `balanced` so the security/review passes keep
 their independent context.
 </token_economy>
@@ -203,18 +243,19 @@ standard→standard, deep→comprehensive) and the user may set it explicitly ("
 - **standard** — multi-lens adversarial review; auto-fix Critical/High; re-review the changed code; loop
   until a clean round (cap 2 rounds).
 - **comprehensive** — every lens, hardest stance; auto-fix Critical/High **and** Medium; re-review after
-  each fix batch; loop until a fully clean round (cap 4 rounds).
+  each fix batch; loop until a fully clean round (cap 3 rounds).
 
 **The loop (per phase, automated, repeat until convergence or the round cap):**
 1. **Hunt adversarially** — actively try to BREAK the code; assume defects exist; run the lenses below
-   (scaled by level) as focused passes. In `balanced`, use fresh-context `forge-*` agents so each round is
-   an independent re-certification; in `economy`, do it inline.
+   (scaled by level) in **one** pass per round — a single reviewer covers every lens (plus the two UI
+   specialists for the UI lens, when there's a UI). In `balanced`, use a fresh-context `forge-*` agent so
+   the review is independent of the code's author; in `economy`, do it inline. Round 1 covers the whole build; later rounds cover only the fix diff (`<loop_guards>` 6).
 2. **Triage** by severity — in-scope = Critical/High (plus Medium at `comprehensive`).
 3. **Fix** in-scope findings at the root cause; log each in PROGRESS.md.
-4. **Re-check** — re-run the relevant tests/step checks **and** re-review the changed code to confirm the
-   finding is gone and the fix introduced nothing new.
-5. **Converge** — repeat from 1 until a full pass yields no new in-scope findings, or the round cap is
-   hit. Record anything still open (with severity + why) in SECURITY.md / REVIEW.md.
+4. **Re-check** — re-run the affected tests/step checks **and** re-review the changed code (plus its
+   direct callers) to confirm the finding is gone and the fix introduced nothing new.
+5. **Converge** — repeat from 1, scoped to the fix diff, until a pass yields no new in-scope findings,
+   or the round cap is hit. Record anything still open (with severity + why) in SECURITY.md / REVIEW.md.
 
 **Lenses** (⑦ correctness side; ⑥ runs the OWASP security checklist instead): logic errors · edge cases &
 robustness · error handling & resource safety · concurrency/races · SPEC-vs-implementation mismatch ·
@@ -251,12 +292,14 @@ not improvise a phase from the one-liner here.
    at the plan-approval gate. Skip entirely for non-UI builds (CLI/library/API).
 
 **③ Plan** — `phases/3-plan.md`
-   Decompose into many tiny, individually-verifiable steps, each with a Verify check and dependencies.
-   Decide tests (yes/no) here. Present for approval; do not build until approved. Write `PLAN.md`.
+   Decompose into right-sized, individually-verifiable steps within the depth's step budget, each with
+   a targeted Verify check and dependencies; close each plan phase with a checkpoint. Decide tests
+   (yes/no) here. Present for approval; do not build until approved. Write `PLAN.md`.
 
 **④ Build** — `phases/4-build.md`
-   Execute steps in dependency order. After EVERY step, run its verification (typecheck/lint/run/
-   functional check; browser for UI). Fix failures before proceeding. Check the box, log to
+   Execute steps in dependency order. After every step, run its targeted Verify check (a quick render
+   check for UI); at each phase checkpoint, run the full typecheck/lint/test suite and regression check.
+   Fix failures before proceeding, within the `<loop_guards>` attempt cap. Check the box, log to
    `PROGRESS.md`. Post a brief progress note at phase boundaries but keep going — stop only for a
    genuine clarity need (see `<autonomy>`).
 
@@ -300,6 +343,9 @@ session can resume cold.
 - **Be agentic.** Decide and proceed on anything within the approved SPEC/PLAN; reserve stops for the
   genuine clarity needs in `<autonomy>`. Don't narrate-and-wait when you can act and log.
 - **Never skip verification** to save time. An unverified step is an unfinished step.
+- **Respect the loop guards.** Thoroughness comes from better checks, not more of them. Never
+  re-decompose a step recursively, repeat a fix that already failed, or re-review the whole codebase
+  every round (`<loop_guards>`).
 - **Never skip the research gate.** Even if the stack seems obvious, confirm currency and surface
   surprises before planning. This is what prevents building on a deprecated API.
 - **Surface, don't bury.** When research or a build step reveals something the user would want to know
@@ -325,7 +371,7 @@ fall back gracefully if they're missing.
 | Need | Forge's dedicated agent | External skill to prefer if installed |
 |------|-------------------------|----------------------------------------|
 | Research & grounding (②) | `forge-researcher` | — |
-| Run & verify behavior (④, ⑦) | `forge-verifier` | `/verify`, `/run` |
+| Run & verify behavior (④ checkpoints, ⑦) | `forge-verifier` | `/verify`, `/run` |
 | Bug / logic / quality review (⑦) | `forge-reviewer` | `/code-review` |
 | Security audit (⑥) | `forge-security-auditor` | `/security-review` |
 | A stuck build step (④) | diagnose inline (scientific method) | `engineering:debug` |

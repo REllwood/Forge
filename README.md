@@ -2,7 +2,7 @@
 
 **Take a software idea from concept to a verified, documented implementation in one meticulous, agentic pipeline.**
 
-Forge isn't an app you run. It's a set of instructions your AI coding assistant follows a complete engineering workflow with the conversational feel of plan mode. It interviews you until there are no grey areas, grounds every assumption in current reality, writes an ultra-granular plan, then builds it autonomously: verifying **every** step, running a security pass, and finishing with a bug-and-logic sweep — documenting the whole thing as it goes.
+Forge isn't an app you run. It's a set of instructions your AI coding assistant follows a complete engineering workflow with the conversational feel of plan mode. It interviews you until there are no grey areas, grounds every assumption in current reality, writes a detailed, right-sized plan, then builds it autonomously: verifying **every** step, running a security pass, and finishing with a bug-and-logic sweep — documenting the whole thing as it goes.
 
 ```
   idea
@@ -10,7 +10,7 @@ Forge isn't an app you run. It's a set of instructions your AI coding assistant 
    ▼
  ① INTERVIEW ──▶ ② RESEARCH ──▶ ③ PLAN ──▶ ④ BUILD ──▶ ⑤ TESTS? ──▶ ⑥ SECURITY ──▶ ⑦ FINAL SWEEP ──▶ done
    SPEC.md       RESEARCH.md     PLAN.md    PROGRESS.md   (opt)        SECURITY.md     REVIEW.md + docs
-   (no grey      (ground every   (tiny      (verify EVERY            (OWASP, fix      (bugs, logic,
+   (no grey      (ground every   (lean      (verify EVERY            (OWASP, fix      (bugs, logic,
     areas)        assumption)     steps)     step before moving)      criticals)       run the app)
 ```
 
@@ -29,8 +29,8 @@ Its six principles override convenience at every step:
 
 1. **No grey areas** — ambiguity is a bug; resolve it before building.
 2. **Ground everything in reality** — verify versions, APIs, and "best practice" against current primary sources, never training memory.
-3. **Small steps, deep detail** — many tiny, individually-verifiable steps beat a few big ones.
-4. **Verify or it didn't happen** — every build step ends with a concrete check that proves it works.
+3. **Right-sized steps, deep detail** — coherent, individually-verifiable steps (about one commit each), with the depth in each step's instructions rather than in ever-smaller steps.
+4. **Verify or it didn't happen** — every build step ends with a targeted check that proves it works, and every plan phase ends with a full checkpoint.
 5. **Document as you go** — the `.forge/` trail is the source of truth and makes a build resumable.
 6. **Build to a standard** — sound architecture and accessible, well-designed UI are part of "done," sized to scope.
 
@@ -141,8 +141,8 @@ Forge runs seven phases and writes an artifact for each into a `.forge/` folder 
 1. **Interview** → settles version control and interviews you across purpose, scope & non-goals, architecture, tech stack, data, integrations, and UI/theme — until there are no grey areas. → `SPEC.md`
 2. **Research & grounding** → verifies your stack and APIs against current sources; a hard gate surfaces *material* findings (deprecations, breaking changes, better options) before any planning. → `RESEARCH.md`
 2b. **UI Design** *(only if there's a UI)* → a platform-aware design team — UI specialist + staff frontend developer + UI artist — converges on the best modern UI **within your scope**; shown for sign-off at the plan gate. → `UI-DESIGN.md`
-3. **Plan** → decomposes the work into many tiny, individually-verifiable steps, each with an explicit verification; you approve it (the one deliberate go/no-go). → `PLAN.md`
-4. **Build** → executes the steps in order, **verifying every one** (typecheck/lint/run/functional/regression; browser + accessibility for UI) before moving on; commits per your chosen cadence. → `PROGRESS.md`
+3. **Plan** → decomposes the work into right-sized, individually-verifiable steps (within a step budget set by depth), each with an explicit verification and each phase closed by a checkpoint; you approve it (the one deliberate go/no-go). → `PLAN.md`
+4. **Build** → executes the steps in order, **verifying every one** with a targeted check before moving on, then runs a full checkpoint (typecheck/lint/tests/regression; browser + accessibility for UI) at each phase boundary; commits per your chosen cadence. → `PROGRESS.md`
 5. **Tests** *(optional)* → tests derived from your success criteria and edge cases.
 6. **Security pass** → an OWASP-mapped audit; fixes Critical/High. → `SECURITY.md`
 7. **Final sweep** → a fresh-context hunt for bugs and logic errors, then runs the app on the golden path and key edge cases, and ships clean docs. → `REVIEW.md`
@@ -158,7 +158,7 @@ A documented, resumable trail in `.forge/`:
 | `FORGE.md` | Manifest + state (which phase, depth, idea) — the resume anchor |
 | `SPEC.md` | Locked decisions from the interview |
 | `RESEARCH.md` | Grounded findings, version pins, resolved forks |
-| `PLAN.md` | The granular step plan (checkboxes) |
+| `PLAN.md` | The step plan (checkboxes + a checkpoint per phase) |
 | `PROGRESS.md` | Per-step build log: did / files / verify result / deviations |
 | `SECURITY.md` | Severity-classified security findings |
 | `REVIEW.md` | Final-sweep bug/logic findings |
@@ -171,6 +171,7 @@ Plus, on Claude Code, seven read-only subagents do the heavy lifting and return 
 - **Economy** — pick `balanced` (default) or `economy`. Economy minimizes total token/cost spend — inline work instead of fresh-context subagents, one combined research pass, terser artifacts — *without* skipping any phase, the research gate, per-step verification, security, or the final sweep. `quick` + `economy` is the leanest run; pick `balanced` for security-sensitive builds so the audit keeps independent context.
 - **Hardening** — how hard the security pass and final sweep hunt for problems. An **automated adversarial find → fix → re-check loop** that runs with no check-ins until the code stops yielding material issues (or a round cap is hit). Level is `basic` / `standard` / `comprehensive` — defaults from depth, and you can raise it explicitly ("harden comprehensively" / "really hunt for bugs"). It's deliberately adversarial but pragmatic: severity-gated, no chasing phantom issues.
 - **UI design team** — for builds with a UI, a platform-aware design panel (UI specialist + staff frontend developer + UI artist) proposes the best modern UI within your stated scope, with throwaway mockups for visual-heavy apps; you sign off at the plan gate. It's then verified against an explicit **UI Acceptance Checklist** — modern, responsive (tested at real breakpoints), accessible (WCAG AA), all states, performant, polished — and fixed until it passes, in both the build and the final sweep. Tune it via the three `agents/forge-ui-*.md` or the UI bars in `standards.md`.
+- **Loop guards** — built-in budgets that keep runs thorough without spiralling: a step budget per depth, decompose-once (no recursive re-planning mid-build), a 3-attempt cap on any one fix, a no-progress breaker on every loop, tiered verification (targeted per step, full suite at phase checkpoints), and diff-scoped re-reviews. Tune them in the `<loop_guards>` section of [`SKILL.md`](skills/forge/SKILL.md) (and its mirror in `dist/forge.md`).
 - **Standards** — edit [`skills/forge/references/standards.md`](skills/forge/references/standards.md) to encode your own architecture/UI/design bars.
 - **Phases** — each phase is a small playbook in [`skills/forge/phases/`](skills/forge/phases); tweak any of them.
 - **Optional integrations** — when these skills are installed, Forge prefers them and falls back gracefully: `/verify`, `/run`, `/code-review`, `/security-review`, `engineering:debug`, `engineering:testing-strategy`, and design/architecture skills.
@@ -180,6 +181,8 @@ Plus, on Claude Code, seven read-only subagents do the heavy lifting and return 
 **Does my code get sent anywhere?** No. Forge is just instructions; it runs entirely through your assistant, using the model and permissions you already have. It ships no telemetry and no dependencies.
 
 **`/forge` isn't found.** Confirm the install path for your tool (above). On Claude Code, a plugin-installed skill may be `/forge:forge`; manual installs are `/forge`. Restart your assistant after installing.
+
+**It's burning through tokens or seems stuck in a loop.** The loop guards (see [Customization](#customization)) should end any loop and surface the issue rather than let it spin — if one doesn't, that's a bug worth an issue. To make a run leaner still, pick `economy` (inline work instead of subagents) and/or `quick` depth, or ask for `basic` hardening.
 
 **Do I need the GitHub CLI?** Only for automatic repo creation. Without `gh`, choose git-only or skip version control — Forge asks at the start.
 

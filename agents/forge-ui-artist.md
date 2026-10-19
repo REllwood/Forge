@@ -35,6 +35,7 @@ findings to the orchestrator.
 
 Judge the visuals against the **UI Acceptance Checklist** (`references/standards.md`) — modern, hierarchy,
 color, typography, spacing, consistency, polish — and give an explicit **pass/fail per item**. You may be
-**re-run across rounds** to confirm refinements landed; report only material issues, and say so plainly
+**re-run across rounds** to confirm refinements landed — judge only what changed and the items that
+previously failed; report only material issues, and say so plainly
 when it passes (that's how the loop converges).
 </output>

@@ -36,6 +36,6 @@ sound, say so plainly. Advisory only — do not edit files; return findings to t
 Judge the design (or built UI) against the **UI Acceptance Checklist** (`references/standards.md`) and give
 an explicit **pass/fail per item** — especially responsive (at real breakpoints), accessibility, all
 states, performance, and platform-fit. You may be **re-run on the revised UI across rounds** to confirm it
-now passes; report only material, real issues, and when it passes say so plainly (that's how the loop
-converges).
+now passes — judge only what changed and the items that previously failed; report only material, real
+issues, and when it passes say so plainly (that's how the loop converges).
 </output>

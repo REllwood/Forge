@@ -19,36 +19,49 @@ PROGRESS.md terse — without ever skipping a step's verification.
 
 ## The per-step loop (repeat for every step, in order)
 
-1. **Announce** the step: id, goal, and its Verify check (so intent is explicit).
+1. **Announce** the step in one line: id, goal, and its Verify check (so intent is explicit).
 2. **Implement** precisely — the smallest change that satisfies the step's Do-instructions. Follow the
    codebase's existing conventions (from RESEARCH), the bars in `references/standards.md`, and — for UI
    work — the agreed `.forge/UI-DESIGN.md` (sound
    architecture; accessible, well-designed UI), sized to the SPEC. No speculative extras, no stubs left
    behind, no half-finished work.
-3. **Verify (mandatory).** Run the step's Verify check, plus the relevant subset of:
-   - Compiles / typechecks.
-   - Lints / formats clean.
-   - The specific command or test for this step passes.
-   - **Functionally exercise the path this step created** — actually run it and observe the expected
-     behavior, don't just assume.
-   - **No regressions** — the things that worked before still work.
-   - **UI steps:** run the dev server and check it in a browser — confirm it renders and behaves, and
-     verify it against the **UI Acceptance Checklist** in `references/standards.md` — actually resize to
-     mobile (~375px) / tablet (~768px) / desktop (~1280px+), exercise each state (loading/empty/error/
-     success), and check keyboard nav, visible focus, and contrast. Use available preview/browser tools, or delegate the visual check to a
-     subagent that has them. If you genuinely cannot drive a browser, say so explicitly rather than
-     claiming the UI works.
-   - **Delegation:** for substantial or UI steps, hand the functional check to the `forge-verifier`
-     agent (or the `/verify` · `/run` skills if installed); verify small steps inline.
-4. **On failure:** fix it now. Diagnose root cause; don't paper over it. For a stubborn failure, apply a
-   scientific-method debugging pass (or the `engineering:debug` skill if installed) before giving up. If
-   you still can't resolve it after a reasonable effort, **checkpoint with the user** (don't proceed on a
-   broken state).
-5. **Record:** check the step's box in `PLAN.md` and append an entry to `.forge/PROGRESS.md` (template
-   below) — what you did, files touched, the verify result, and any deviation.
+3. **Verify (mandatory, targeted).** Run the step's Verify check and **functionally exercise the path
+   this step created** — actually run it and observe the expected behaviour, don't just assume. Add a
+   compile/typecheck of the touched code when it's cheap (incremental build, single-file check). The
+   full suite and regression check wait for the phase checkpoint (below).
+   - **UI steps:** load it in the browser and confirm the new piece renders and works. The full UI
+     Acceptance Checklist waits for the checkpoint, not every step. If you genuinely cannot drive a
+     browser, say so explicitly rather than claiming the UI works.
+   - Verify steps **inline** — don't spawn an agent for a single step.
+4. **On failure:** fix it now. Diagnose root cause; don't paper over it. Take at most **3 attempts**,
+   each testing a *different* hypothesis (a scientific-method pass, or the `engineering:debug` skill if
+   installed). If the same error returns after a fix, the hypothesis was wrong — change approach, don't
+   repeat it. After 3 attempts, restore the last good state and **checkpoint with the user** with what
+   you tried (don't proceed on a broken state, and don't keep looping).
+5. **Record:** check the step's box in `PLAN.md` and append a short entry to `.forge/PROGRESS.md`
+   (template below) — what you did, files touched, the verify result, and any deviation. The PLAN.md
+   checkboxes are the mid-phase resume pointer; FORGE.md only needs updating at checkpoints.
 6. **Deviation handling:** if reality differs from the plan (a step is wrong, missing, or a better path
    appears), adapt — and **log the deviation and rationale** in PROGRESS.md. If scope shifts materially,
-   update PLAN.md and flag it at the next checkpoint.
+   update PLAN.md and flag it at the next checkpoint. **Don't re-plan mid-build:** if a step turns out
+   too big, split it **once** into at most 3 steps, log it, and carry on — never split a split or write a
+   sub-plan for one step.
+
+## Phase checkpoints — the heavy verification lives here
+
+When the last step of a plan phase is done, run its **Checkpoint** before starting the next phase:
+- Full compile / typecheck, lint / format, and the test suite (if any) — all clean.
+- **No regressions** — re-exercise what earlier phases delivered (the golden path so far).
+- **UI screens this phase completed:** verify them against the **UI Acceptance Checklist** in
+  `references/standards.md` — actually resize to mobile (~375px) / tablet (~768px) / desktop
+  (~1280px+), exercise each state (loading/empty/error/success), and check keyboard nav, visible focus,
+  and contrast. Use available preview/browser tools, or delegate the visual check to a subagent that has
+  them.
+- **Delegation:** for substantial phases or UI, hand the checkpoint to the `forge-verifier` agent (or
+  the `/verify` · `/run` skills if installed) with the specific files and criteria to check.
+
+Fix a checkpoint failure like any other (same attempt cap), then re-run **only the checks that failed**
+plus anything the fix touched. Update FORGE.md's Current position, then post the phase-boundary note.
 
 ## Keep moving — stop only for clarity
 
@@ -57,9 +70,9 @@ short, **non-blocking** note (what's done, verified state, what's next) and cont
 permission to proceed. Stop and ask only when you hit one of the genuine clarity needs in SKILL.md
 `<autonomy>`: real ambiguity SPEC/RESEARCH don't settle, a true blocker, a risky/irreversible action, or
 a material scope/cost change. For everything else — equivalent implementation choices, small fixes, a
-failed verify you can diagnose — **decide, act, and log it.** Keep retrying and fixing a failed step
-yourself before escalating. Keep FORGE.md's Current position current so a context reset can resume
-mid-phase.
+failed verify you can diagnose — **decide, act, and log it.** Fix a failed step yourself, within
+the attempt cap, before escalating. PLAN.md checkboxes plus FORGE.md's Current position (refreshed at
+each checkpoint) let a context reset resume mid-phase.
 
 ## Version control & GitHub
 
@@ -82,13 +95,16 @@ Honor the VCS decision recorded in SPEC:
 ### ✅ A.1 — {step title}   ({YYYY-MM-DD})
 - **Did:** {what changed}
 - **Files:** {paths}
-- **Verify:** {check run → result, e.g. "tsc clean; ran `npm start`, GET /health → 200 ✓"}
-- **Deviation:** {none | what differed from plan and why}
+- **Verify:** {check run → result, e.g. "ran `npm start`, GET /health → 200 ✓"}
+- **Deviation:** {omit if none | what differed from plan and why}
 
 ### ✅ A.2 — {step title}   ({YYYY-MM-DD})
 - …
+
+### ✓ Checkpoint A   ({YYYY-MM-DD})
+- **Ran:** {typecheck / lint / tests / golden path so far / UI checklist} → {result}
 ```
 
 **Exit criteria:** every build step checked off in PLAN.md and logged in PROGRESS.md with a passing
-verify; codebase in a working state. Update FORGE.md (check ④). → If tests were chosen,
+verify; every phase checkpoint passed; codebase in a working state. Update FORGE.md (check ④). → If tests were chosen,
 `phases/5-tests.md`; otherwise `phases/6-security.md`.

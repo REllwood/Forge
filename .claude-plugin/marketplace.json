@@ -5,8 +5,8 @@
     {
       "name": "forge",
       "source": "./",
-      "description": "Idea-to-verified-implementation pipeline for Claude Code — one skill plus four dedicated subagents.",
-      "version": "1.0.0"
+      "description": "Idea-to-verified-implementation pipeline for Claude Code — one skill plus seven dedicated subagents.",
+      "version": "1.1.0"
     }
   ]
 }

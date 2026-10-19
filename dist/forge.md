@@ -26,8 +26,10 @@ idea → ① INTERVIEW → ② RESEARCH → ③ PLAN → ④ BUILD → ⑤ TESTS
 1. **No grey areas.** Ambiguity is a bug — resolve it before building, or record an explicit assumption.
 2. **Ground everything in reality.** Verify versions/APIs/"best practice" against current primary
    sources; never trust training memory. Surface surprises before planning.
-3. **Small steps, deep detail.** Many tiny, individually-verifiable steps beat a few big ones.
-4. **Verify or it didn't happen.** Every build step ends with a concrete check that proves it works.
+3. **Right-sized steps, deep detail.** Coherent, individually-verifiable steps (about one commit each);
+   put the depth into each step's instructions and check, not into ever-smaller steps.
+4. **Verify or it didn't happen.** Every build step ends with a targeted check that proves it works;
+   every plan phase ends with a full checkpoint (typecheck, lint, tests, no regressions).
 5. **Document as you go.** The `.forge/` trail is the source of truth and makes the build resumable.
 6. **Build to a standard.** Sound architecture and accessible, well-designed UI are part of "done,"
    sized to scope. Never gold-plate; never ship sloppy structure.
@@ -53,17 +55,40 @@ Create and maintain these; they document the build and make it resumable across 
 - **`RESEARCH.md`** — grounded findings, version pins, resolved forks.
 - **`UI-DESIGN.md`** *(conditional — only if the build has a UI)* — the agreed UI design contract (+
   throwaway mockups under `.forge/ui-mockups/` for visual-heavy apps).
-- **`PLAN.md`** — the granular step plan (checkboxes).
+- **`PLAN.md`** — the right-sized step plan (checkboxes + a checkpoint per phase).
 - **`PROGRESS.md`** — per-step build log (did / files / verify result / deviations).
 - **`SECURITY.md`** — severity-classified security findings.
 - **`REVIEW.md`** — final-sweep bug/logic findings.
 
 ## Depth (chosen at the start; scales the whole pipeline)
-- **quick** — ~3–5 questions, light research, reasonable plan granularity, standard reviews.
-- **standard** (default) — ~8–12 questions across all dimensions, solid research, granular plan, full
-  security + sweep.
-- **deep** — exhaustive questioning until no grey areas, multi-source research, ultra-granular plan, deep
-  security + sweep.
+- **quick** — ~3–5 questions, light research, a short plan (~4–10 steps), standard reviews.
+- **standard** (default) — ~8–12 questions across all dimensions, solid research, a solid plan (~8–20
+  steps), full security + sweep.
+- **deep** — exhaustive questioning until no grey areas, multi-source research, a detailed plan (~15–35
+  steps, richer per step), deep security + sweep.
+
+Depth buys more thorough thinking per step — never more decomposition, retries, or loop rounds than the
+Loop guards allow.
+
+## Loop guards (binding at every depth, economy, and hardening level)
+They keep the pipeline thorough without letting it spiral. When one trips, log a one-line note in
+`PROGRESS.md` and move on (or escalate per Autonomy).
+1. **Step budget** — plans stay within the depth's range (quick ~4–10 · standard ~8–20 · deep ~15–35);
+   merge steps to fit, or give a one-line reason at the plan gate if the SPEC genuinely needs more.
+2. **Decompose once** — in the plan, not the build. An oversized step may be split once into at most 3
+   steps (logged); never split a split or write a sub-plan for one step.
+3. **Fix-attempt cap** — at most 3 attempts per failure, each a *different* hypothesis; the same error
+   twice means change approach. After 3, restore the last good state and ask the user.
+4. **No-progress breaker** — any loop (fixing, tests-to-green, hardening, design rounds) ends when an
+   iteration yields no material change or new in-scope finding.
+5. **Tiered verification** — a targeted check per step; the full suite + regression check at each phase
+   checkpoint; the full UI checklist once per completed screen and in the final sweep — never after
+   every step.
+6. **Diff-scoped re-checks** — round 1 of a review/audit covers the whole build; later rounds re-review
+   only the code the fixes changed (plus direct callers), then one full run closes the phase.
+7. **Spawn sparingly** (if your tool has subagents) — phase-level jobs only, one reviewer per round
+   covering every lens, verifier at checkpoints; hand each agent the specific files to read.
+8. **Read once** — don't re-read files already in context; read only the slice you need.
 
 ## Economy (separate from depth; chosen at the start)
 Controls *how many tokens are spent to reach a given depth* — never *what gets done*. **Economy never
@@ -80,12 +105,12 @@ the rigor bar.**
 ## Hardening (the automated adversarial find→fix→re-check loop in ⑥/⑦)
 Runs automatically — **no user check-ins**. Level defaults from depth (quick→basic, standard→standard,
 deep→comprehensive); the user may set it explicitly ("harden comprehensively"). Each phase: **hunt
-adversarially** — try to BREAK the code, assume defects exist — across the lenses (logic errors · edge
+adversarially** — try to BREAK the code, assume defects exist — in one pass per round across the lenses (logic errors · edge
 cases & robustness · error handling & resource safety · concurrency/races · SPEC-vs-implementation
 mismatch · integration correctness · performance where it matters; ⑥ uses the OWASP checklist) → **fix**
-Critical/High (plus Medium at `comprehensive`) → **re-check** (re-run tests/step checks + re-review the
-changed code) → **loop** until a full pass finds nothing new or the round cap (basic 1 · standard 2 ·
-comprehensive 4). **Pragmatic, not paranoid:** severity-gated; no chasing speculative/stylistic issues,
+Critical/High (plus Medium at `comprehensive`) → **re-check** (re-run the affected checks + re-review
+only the changed code) → **loop** until a re-check finds nothing new or the round cap (basic 1 ·
+standard 2 · comprehensive 3). **Pragmatic, not paranoid:** severity-gated; no chasing speculative/stylistic issues,
 no manufacturing problems, no looping past convergence; if the cap is hit with issues open, surface them
 as known limitations.
 
@@ -123,18 +148,22 @@ A platform-aware **design panel** converges on the best modern UI *within the us
 - **UI artist** — checks visual craft: hierarchy, color, typography, spacing, consistency, modern
   aesthetic, polish.
 They iterate (designer → both critiques → converge) until it's both buildable and beautiful **and meets
-the UI Acceptance Checklist** (see Standards), anchored to the user's references. **Fidelity auto by app type:** throwaway HTML mockups (1–3 screens,
+the UI Acceptance Checklist** (see Standards), anchored to the user's references — capped at 1 round
+(quick) / 2 (standard) / 3 (deep), with later rounds critiquing only what changed. **Fidelity auto by app type:** throwaway HTML mockups (1–3 screens,
 in `.forge/ui-mockups/`) for visual-heavy apps; a written design direction for simpler UIs; spec-only in
 `economy`. The UI direction is **presented at the plan-approval gate** (no separate stop); flag any
 departure from the user's stated preference for sign-off. Honor scope — elevate within it, never override
 or gold-plate.
 
 ## ③ Plan → `PLAN.md` (approval gate)
-Decompose into ordered phases → **atomic steps**. Each step: Goal, Files, precise Do-instructions, an
-explicit **Verify** check (the exact command/behavior that proves it works), Depends-on. Front-load a
+Decompose into ordered phases → **right-sized steps** within the depth's step budget (see Loop guards).
+Each step: Goal, Files, precise Do-instructions, an explicit, targeted **Verify** check (the exact
+command/behavior that proves *this* step works), Depends-on. End each phase with a **checkpoint**: full
+typecheck/lint/tests + regression check (+ the UI checklist for screens it completed). Front-load a
 **walking skeleton** that runs end-to-end early. **Establish architecture early** (scaffold layers /
 separation of concerns; for UI set up design tokens + base components before features) per Standards.
-Granularity test: if a step needs more than one verification or touches unrelated concerns, split it.
+Granularity test: one focused commit, one meaningful check. Split only unrelated concerns; fold trivial
+setup (a dependency, import, config value, type) into the step that needs it.
 Decide tests here (yes/no, what kind). **Present the plan — and, if `UI-DESIGN.md` exists, the UI
 direction + mockups — for approval; do not build until approved.**
 This is the last routine stop; after it, run autonomously to done.
@@ -144,20 +173,24 @@ If Git/GitHub was chosen and no repo exists, at the first step: `git init`, add 
 `.gitignore` (ignore `.forge/` unless asked to track it, plus secrets/build artifacts), initial commit,
 and (if GitHub) create the remote (`gh repo create … --source=. --push`). Then, **for each step in
 order:** (1) announce goal + Verify; (2) implement the smallest change that satisfies it, following repo
-conventions and Standards (no stubs/half-finished work); (3) **verify (mandatory)** — typecheck/compile,
-lint, run the step's check, **functionally exercise the path**, confirm no regressions; for UI, run it in
-a browser and check responsiveness + basic accessibility (keyboard, focus, contrast); (4) on failure, fix
-the root cause (scientific-method debugging for stubborn ones) before proceeding — never advance on a
-broken state; (5) check the box in `PLAN.md` and append a `PROGRESS.md` entry; (6) if reality diverges
-from the plan, adapt and **log the deviation**. Commit atomically per the chosen cadence (never commit
+conventions and Standards (no stubs/half-finished work); (3) **verify (mandatory, targeted)** — run
+the step's check and **functionally exercise the path** it created; for UI, confirm it renders and works
+in a browser; (4) on failure, fix the root cause — at most 3 attempts, each a different hypothesis, then
+restore the last good state and ask the user — never advance on a broken state; (5) check the box in
+`PLAN.md` and append a short `PROGRESS.md` entry; (6) if reality diverges from the plan, adapt and **log
+the deviation** (split an oversized step once, never recursively). At each **phase checkpoint**, run the
+full typecheck/lint/test suite, re-check earlier phases for regressions, and verify completed UI screens
+against the UI Acceptance Checklist (real breakpoints, every state, keyboard/focus/contrast). Commit atomically per the chosen cadence (never commit
 secrets; never force-push without OK; push per the standing authorization). Post a brief note at each
 phase boundary but keep going.
 
 ## ⑤ Tests (only if chosen) 
-Set up the framework (from the stack/conventions). Derive tests from **each SPEC success criterion**
-(acceptance), each feature's happy path, and **edge cases** (boundaries, empty/error paths, research
-gotchas, anything the build flagged). Write, run, make green; fix real bugs in the code, not the test.
-Record which criteria are covered.
+Set up the framework (from the stack/conventions). Size the suite to the SPEC: at least one test per
+**SPEC success criterion** (acceptance), a happy-path test for features those don't already cover, and
+**edge cases where the risk is real** (boundaries, empty/error paths in logic that can genuinely break,
+research gotchas, anything the build flagged). No coverage-chasing, no duplicate assertions. Write and
+run in batches; fix real bugs in the code, not the test (fix the test only if it asserts something the
+SPEC doesn't require); 3-attempt cap per failure. Once green, stop. Record which criteria are covered.
 
 ## ⑥ Security pass → `SECURITY.md`
 Audit with fresh eyes (a subagent if available, else a deliberate self-review). Map to OWASP Top 10:
@@ -176,9 +209,10 @@ handling at boundaries (unhandled rejections, swallowed errors, resource leaks);
 mismatches**; dead/duplicate code, leftover TODOs/stubs/debug logging; consistency vs Standards. Then
 **run it for real** — full test suite + golden path + key edge cases against the success criteria (drive
 the UI in a browser; for UI, verify against the **UI Acceptance Checklist** — resize to mobile/tablet/
-desktop and exercise every state — fixing → re-checking until it passes). Write `REVIEW.md`, then run the
+desktop and exercise every state — fixing → re-checking only the failed items until it passes). Write `REVIEW.md`, then run the
 automated **hardening loop** (see Hardening): fix Critical/High (plus Medium at `comprehensive`) →
-re-hunt the changed code + re-run tests/golden-path → repeat until a clean pass or the round cap; record
+re-hunt only the changed code + re-run the affected tests/golden-path → repeat until a clean re-check
+or the round cap, then one full run; record
 anything still open as known limitations. **Ship docs:** generate/refresh a clear README
 (what it is, setup, run, usage, config) and brief architecture notes. If VCS was set up, make the final
 commit and push. Mark `FORGE.md` → done and give a wrap-up: what was built, how it was verified, known

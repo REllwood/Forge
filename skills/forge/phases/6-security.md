@@ -48,8 +48,10 @@ Run the adversarial **hardening loop** (SKILL.md `<hardening>`), automated, unti
 - **Fix** Critical/High (plus Medium at `comprehensive`) at the root cause — confirm only for genuinely
   risky/irreversible actions (`<autonomy>`); otherwise just do it. Log each fix in PROGRESS.md.
 - **Re-audit** the changed code: re-run the OWASP checklist on what you touched plus the relevant
-  test/step checks, to confirm the issue is gone and the fix introduced nothing new.
-- **Repeat** the hunt → fix → re-audit cycle until a full pass finds no new in-scope issues, or the
+  test/step checks, to confirm the issue is gone and the fix introduced nothing new. Keep it
+  diff-scoped — hand the auditor only the files the fixes changed (plus their direct callers), never the
+  whole codebase again (SKILL.md `<loop_guards>`).
+- **Repeat** the hunt → fix → re-audit cycle until a re-audit finds no new in-scope issues, or the
   level's round cap is hit. Record any still-open items in SECURITY.md (severity + why deferred).
 
 Stay pragmatic: severity-gated, no chasing speculative issues, no looping past convergence. **Don't stop

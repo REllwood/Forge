@@ -33,8 +33,9 @@ in `economy`, do the same roles inline):
 **Converge:** fold both critiques back into the design and iterate until the panel agrees it's *both
 buildable and beautiful* **and the design meets every item of the UI Acceptance Checklist**
 (`references/standards.md`) — modern, responsive, accessible, all states, performance, polish,
-platform-fit — or a sensible cap (2 rounds standard, 3 at deep/comprehensive). Stay anchored to scope;
-don't gold-plate.
+platform-fit — or the cap is hit (1 round at quick, 2 at standard, 3 at deep). Round 2+ critiques only
+what changed since the last round, and the panel stops early once a round raises no material issues
+(SKILL.md `<loop_guards>`). Stay anchored to scope; don't gold-plate.
 
 ## Fidelity — auto by app type
 
