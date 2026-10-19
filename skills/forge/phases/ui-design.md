@@ -90,8 +90,10 @@ what changed since the last round, and the panel stops early once a round raises
 UI-DESIGN.md (and any mockups) feed `phases/3-plan.md`: the plan sequences the UI build from it (design
 tokens + base components **before** screens). The **UI direction is presented together with the plan at
 the approval gate** — the user signs off or tweaks it there; there is **no separate UI stop**. Any
-"departures from stated preference" are surfaced explicitly for that sign-off. Update FORGE.md (check
-②.5, refresh Current position).
+"departures from stated preference" are surfaced explicitly for that sign-off. In **unattended** run
+mode there is no sign-off: build the user's stated preference, and leave each recommended departure in
+UI-DESIGN.md's *Open questions* for the final summary. Update FORGE.md (check ②.5, Status → `plan`,
+refresh Current position).
 
 **Exit criteria:** UI-DESIGN.md written (+ mockups in `.forge/ui-mockups/` if visual-heavy); panel
 converged on a design that meets the UI Acceptance Checklist; anchored to SPEC scope; departures flagged for the gate. →

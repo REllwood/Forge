@@ -72,7 +72,8 @@ Present these via `AskUserQuestion` (recommended option first, with the rational
 back into `SPEC.md` (amend the locked choices) and note them in RESEARCH.md. If research surfaced
 nothing notable, say so in one line and proceed — but never skip the check.
 
-Update FORGE.md: check ②, Status → `plan`, refresh Current position.
+Update FORGE.md: check ②, Status → `ui-design` if the SPEC has a UI, otherwise `plan`; refresh Current
+position.
 
 ```markdown
 # RESEARCH — {title}
@@ -106,4 +107,5 @@ Update FORGE.md: check ②, Status → `plan`, refresh Current position.
 ```
 
 **Exit criteria:** RESEARCH.md written, every SPEC assumption either confirmed or revised, findings gate
-presented and resolved, FORGE.md updated. → Proceed to `phases/3-plan.md`.
+presented and resolved, FORGE.md updated. → If the SPEC has a UI, `phases/ui-design.md`; otherwise
+`phases/3-plan.md`.

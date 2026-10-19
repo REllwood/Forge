@@ -15,7 +15,7 @@ step. You do not see the conversation.
 
 <method>
 - Determine how to run it (build/start/test commands from the project); install deps if needed.
-- Run the **test suite** if one exists; report pass/fail.
+- Run the full **test suite** with its one command; report pass/fail.
 - Exercise the **golden path** end-to-end and the **key edge cases** for the target behavior. Use Bash
   (CLI, scripts, `curl` against a running server) to drive it and compare real output to expected.
 - **UI:** if browser/preview MCP tools are available in your environment, use them to load the app and

@@ -77,16 +77,20 @@ it has one).
 
 ## 5. Clean-room run & definition of done
 
-**Clean-room run** — prove it works beyond your own environment, and that the README is right. Clone the
-repo (or copy the committed tree) into a fresh temporary directory and follow the README's setup steps
-**literally**, using nothing from your environment beyond its documented prerequisites: install, add
-config from `.env.example`, run the full suite, start the app, and walk the golden path. Every step that
-fails, or that you had to know without the README telling you, is a finding — usually a missing
-dependency, an undocumented env var, or a README gap. Fix it and re-run only the failed steps. Hand this
-to the `forge-verifier` agent in `balanced`.
+**Commit first.** If version control is in use, commit the completed state (code, tests, docs) now — the
+clean-room run clones that commit, so it must include everything from §1–§4.
 
-**CI** — if a workflow was added and pushes are authorised, push and confirm the CI run goes green (e.g.
-`gh run watch`). If you can't read CI status from here, say so rather than assuming it passed.
+**Clean-room run** — prove it works beyond your own environment, and that the README is right. Clone the
+repo (or, without git, copy the tree minus ignored and build files) into a fresh temporary directory and
+follow the README's setup steps **literally**, using nothing from your environment beyond its documented
+prerequisites: install, add config from `.env.example`, run the full suite, start the app, and walk the
+golden path. Every step that fails, or that you had to know without the README telling you, is a finding —
+usually a missing dependency, an undocumented env var, or a README gap. Fix it and re-run only the failed
+steps. Hand this to the `forge-verifier` agent in `balanced`.
+
+**CI** — if a workflow was added and pushes are authorised, commit any clean-room fixes, push, and
+confirm the CI run on that final commit goes green (e.g. `gh run watch`). If you can't read CI status from
+here, say so rather than assuming it passed.
 
 **Definition of done** — walk SKILL.md `<definition_of_done>` item by item and record the result in
 REVIEW.md. Anything not met is fixed now (within `<loop_guards>`) or listed as a known limitation with
@@ -94,9 +98,9 @@ its reason — never silently dropped.
 
 ## 6. Final summary & close out
 
-If version control / GitHub was set up, make the **final commit and push** of the completed state (code +
-docs) per the authorized cadence. Then mark FORGE.md Status → `done`, check ⑧. Present the user a concise
-wrap-up:
+If version control / GitHub was set up, make sure the **final commit** holds everything (including any
+fixes from §5) and push it per the authorized cadence. Then mark FORGE.md Status → `done`, check ⑧.
+Present the user a concise wrap-up:
 - **What was built** (against the original idea), and **how to run it** (the commands that matter).
 - **How it was verified** — test counts by layer, acceptance criteria covered, adversarial attacks run
   and what broke, security findings fixed, clean-room result, CI (point to the artifacts).

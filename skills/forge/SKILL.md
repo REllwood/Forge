@@ -148,7 +148,7 @@ Template:
 ```markdown
 # Forge — {title}
 
-- **Status:** interview | research | plan | build | tests | security | adversarial | final-sweep | done
+- **Status:** interview | research | ui-design | plan | build | tests | security | adversarial | final-sweep | done
 - **Run mode:** review | unattended
 - **Depth:** quick | standard | deep
 - **Economy:** balanced | economy
@@ -162,9 +162,9 @@ Template:
 - [ ] ① Interview      → SPEC.md
 - [ ] ② Research       → RESEARCH.md
 - [ ] ②.5 UI Design    → UI-DESIGN.md (only if the build has a UI)
-- [ ] ③ Plan           → PLAN.md
+- [ ] ③ Plan           → PLAN.md + TESTING.md (test plan)
 - [ ] ④ Build          → PROGRESS.md
-- [ ] ⑤ Test suite     → TESTING.md
+- [ ] ⑤ Test suite     → TESTING.md (completed)
 - [ ] ⑥ Security       → SECURITY.md
 - [ ] ⑦ Adversarial    → TESTING.md (charter + results)
 - [ ] ⑧ Final sweep    → REVIEW.md + project docs
@@ -221,9 +221,9 @@ escalate per `<autonomy>`).
    re-reviews **only the code the fixes changed** (plus its direct callers) and re-runs only the affected
    checks. One full test + golden-path run then closes the phase.
 7. **Spawn sparingly.** Subagents are for phase-level jobs, never per build step. One reviewer, auditor
-   or adversary per hardening round covers every lens rather than one agent per lens (a UI build adds only the two UI
-   specialists); `forge-verifier` runs at phase checkpoints, not after each step. Hand every agent the specific files to read — never "the whole
-   repo".
+   or adversary per hardening round covers every lens rather than one agent per lens (a UI build adds only
+   the two UI specialists); `forge-verifier` runs at phase checkpoints, not after each step. Hand every
+   agent the specific files to read — never "the whole repo".
 8. **Read once.** Don't re-read files already in context; read only the slice you need.
 </loop_guards>
 
@@ -231,17 +231,17 @@ escalate per `<autonomy>`).
 **Economy** is a separate knob from depth, chosen at the start and recorded in FORGE.md. Default is
 **balanced**. It controls *how many tokens the pipeline spends to reach a given depth* — not what gets
 done. **Economy mode never skips a phase, the research gate, per-step verification, the test suite, the
-security pass, adversarial testing, or the final sweep, and never lowers the "no grey areas / verify or it didn't happen" bar.** It trims the
-*expensive machinery*, not the rigor.
+security pass, adversarial testing, or the final sweep, and never lowers the "no grey areas / verify or it
+didn't happen" bar.** It trims the *expensive machinery*, not the rigor.
 
 - **balanced** (default) — the full experience: fresh-context subagents for research/review/security/
   verify, parallel investigations, normal progress narration. Best quality and independence.
 - **economy** — minimize total token spend while preserving every guarantee:
   1. **Inline over subagents.** Do research / review / security / adversarial / verify work in the main
-     context instead of spawning fresh-context `forge-*` agents (each agent re-reads files — the biggest single cost). When a
-     job is genuinely too large for the main context, still spawn one — but give it a tight scope and a
-     low word cap. (Honest tradeoff: less independent "fresh-eyes" separation; offset it by being
-     deliberately adversarial when you self-review.)
+     context instead of spawning fresh-context `forge-*` agents (each agent re-reads files — the biggest
+     single cost). When a job is genuinely too large for the main context, still spawn one — but give it a
+     tight scope and a low word cap. (Honest tradeoff: less independent "fresh-eyes" separation; offset it
+     by being deliberately adversarial when you self-review.)
   2. **One research pass, not many.** Collapse parallel research into a single focused pass; lean on
      Context7 for exact-version docs over broad web crawling; verify the load-bearing / uncertain choices
      and don't over-research the obviously-current.
@@ -260,10 +260,11 @@ their independent context.
 
 <hardening>
 **Hardening** is the automated, adversarial **find → fix → re-check loop** that powers the Security pass
-(⑥), Adversarial testing (⑦) and the Final sweep (⑧). It runs to completion **without user interaction** — only the standard
-`<autonomy>` stop-conditions can pause it (e.g. a fix that needs a risky/irreversible action). Its
-intensity is the **hardening level**, recorded in FORGE.md; it defaults from depth (quick→basic,
-standard→standard, deep→comprehensive) and the user may set it explicitly ("harden comprehensively").
+(⑥), Adversarial testing (⑦) and the Final sweep (⑧). It runs to completion **without user interaction** —
+only the standard `<autonomy>` stop-conditions can pause it (e.g. a fix that needs a risky/irreversible
+action). Its intensity is the **hardening level**, recorded in FORGE.md; it defaults from depth
+(quick→basic, standard→standard, deep→comprehensive) and the user may set it explicitly ("harden
+comprehensively").
 
 **Levels**
 - **basic** — one adversarial pass per phase; auto-fix Critical/High; one confirming re-check (cap 1 round).
@@ -276,7 +277,8 @@ standard→standard, deep→comprehensive) and the user may set it explicitly ("
 1. **Hunt adversarially** — actively try to BREAK the code; assume defects exist; run the lenses below
    (scaled by level) in **one** pass per round — a single reviewer covers every lens (plus the two UI
    specialists for the UI lens, when there's a UI). In `balanced`, use a fresh-context `forge-*` agent so
-   the review is independent of the code's author; in `economy`, do it inline. Round 1 covers the whole build; later rounds cover only the fix diff (`<loop_guards>` 6).
+   the review is independent of the code's author; in `economy` (and for ⑥ at `quick`), do it inline.
+   Round 1 covers the whole build; later rounds cover only the fix diff (`<loop_guards>` 6).
 2. **Triage** by severity — in-scope = Critical/High (plus Medium at `comprehensive`).
 3. **Fix** in-scope findings at the root cause, each with a regression test that fails before the fix
    and passes after; log each in PROGRESS.md.
@@ -285,11 +287,12 @@ standard→standard, deep→comprehensive) and the user may set it explicitly ("
 5. **Converge** — repeat from 1, scoped to the fix diff, until a pass yields no new in-scope findings,
    or the round cap is hit. Record anything still open (with severity + why) in SECURITY.md / REVIEW.md.
 
-**Lenses** (⑧'s correctness review; ⑥ runs the OWASP checklist and ⑦ runs executable attacks instead): logic errors · edge cases &
-robustness · error handling & resource safety · concurrency/races · SPEC-vs-implementation mismatch ·
-integration/contract correctness · performance where it genuinely matters · **UI quality** (when the build
-has a UI — the **UI Acceptance Checklist** in `references/standards.md`: modern · responsive · accessible ·
-all states · polish, judged by `forge-ui-artist` + `forge-frontend-engineer` and fixed until it passes).
+**Lenses** (⑧'s correctness review; ⑥ runs the OWASP checklist and ⑦ runs executable attacks instead):
+logic errors · edge cases & robustness · error handling & resource safety · concurrency/races ·
+SPEC-vs-implementation mismatch · integration/contract correctness · performance where it genuinely
+matters · **UI quality** (when the build has a UI — the **UI Acceptance Checklist** in
+`references/standards.md`: modern · responsive · accessible · all states · polish, judged by
+`forge-ui-artist` + `forge-frontend-engineer` and fixed until it passes).
 
 **Pragmatic, not paranoid (binding):** hunt in real detail, but only loop on *material*, severity-gated
 findings. Do **not** chase speculative, stylistic, or theoretical issues, manufacture problems to justify
@@ -303,7 +306,8 @@ against it:
 1. Every SPEC success criterion is covered by a passing automated acceptance test. (Anything genuinely
    beyond automation, such as a purely visual judgement, is verified by observation and noted as such.)
 2. The full suite — unit, integration, end-to-end where the form factor has one, and the adversarial
-   tests — passes with one command, twice in a row (no flaky tests).
+   tests — passes with one command, twice in a row (no flaky tests). A deferred break is kept as an
+   expected-failure test tied to a known limitation (`phases/7-adversarial.md`), never deleted.
 3. Typecheck, lint and formatting are clean; the dependency audit has no unaddressed Critical/High.
 4. Every Critical/High finding from security, adversarial testing and the final sweep is fixed, and each
    fix carries a regression test.
@@ -355,7 +359,7 @@ not improvise a phase from the one-liner here.
 **⑤ Test suite** — `phases/5-tests.md` (always)
    Complete the automated suite: an acceptance test for every success criterion, integration tests
    across the real seams, an end-to-end golden path, and edge cases where the risk is real. One
-   command, deterministic (green twice in a row), CI if chosen. Write `TESTING.md`.
+   command, deterministic (green twice in a row), CI if chosen. Complete `TESTING.md`.
 
 **⑥ Security pass** — `phases/6-security.md`
    Threat model (lite), then the automated adversarial **hardening loop** (`<hardening>`) with the
@@ -407,6 +411,8 @@ session can resume cold.
   stop conditions, decide from the SPEC's intent, record the assumption, and keep going.
 - **Never weaken a test to make it pass.** A failing test means the code — or the test's reading of the
   SPEC — is wrong. Fix the one that's wrong; never delete, skip, or loosen an assertion to get green.
+  The one exception: a break deliberately deferred as a known limitation is kept as an expected-failure
+  test that names it (`phases/7-adversarial.md`).
 - **Never skip the research gate.** Even if the stack seems obvious, confirm currency and surface
   surprises before planning. This is what prevents building on a deprecated API.
 - **Surface, don't bury.** When research or a build step reveals something the user would want to know
@@ -414,7 +420,8 @@ session can resume cold.
 - **Adapt, but log.** When reality diverges from the plan during build, adjust — and record the
   deviation and rationale in PROGRESS.md so the trail stays truthful.
 - **Confirm risky/irreversible actions.** Migrations, deletes, force operations, anything that leaves
-  the local machine (push, deploy, sending messages) — confirm first. Never auto-push.
+  the local machine (push, deploy, sending messages) — confirm first, unless a standing authorisation
+  from intake covers it (e.g. pushes on the agreed cadence). Never force-push without an explicit OK.
 - **Reuse over reinvent.** When forging inside an existing codebase, research its patterns first and
   follow them rather than introducing parallel conventions.
 - **Don't over-build.** Implement what the SPEC requires. No speculative abstractions, no features the

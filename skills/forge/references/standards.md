@@ -96,5 +96,6 @@ still open after the cap is recorded as a known limitation). **Check, don't assu
   `forge-ui-artist`) proposes the best modern UI *within* the user's scope, captured in `UI-DESIGN.md`.
 - **Plan** — sequence steps to establish the architecture early (scaffold layers; set up design tokens
   and base components before features).
-- **Build** — implement to these bars; UI step verification includes responsive + accessibility checks.
+- **Build** — implement to these bars; each UI step gets a quick render check, and completed screens are
+  checked against the UI Acceptance Checklist (responsive + accessibility included) at phase checkpoints.
 - **Final sweep** — review the result against this file: architecture soundness plus a design + a11y pass.

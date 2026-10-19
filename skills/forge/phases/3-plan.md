@@ -76,9 +76,9 @@ Adversarial testing (⑦), Final sweep (⑧).
 ## 4. Present for approval — DO NOT build yet
 
 Write `.forge/PLAN.md`, then present a concise outline to the user (phases, step count against the
-depth's budget, the headline steps, and the acceptance matrix in brief) — **and, if `.forge/UI-DESIGN.md` exists, the UI direction with
-it**: the design summary, any `.forge/ui-mockups/`, and any flagged departures from the user's stated
-preference, for sign-off here.
+depth's budget, the headline steps, and the acceptance matrix in brief) — **and, if `.forge/UI-DESIGN.md`
+exists, the UI direction with it**: the design summary, any `.forge/ui-mockups/`, and any flagged
+departures from the user's stated preference, for sign-off here.
 Ask via `AskUserQuestion`: **Approve / Revise (tell me what) / Change depth.** Iterate on the plan (and
 the UI direction) until approved. Building before approval violates the pipeline.
 
@@ -86,7 +86,8 @@ the UI direction) until approved. Building before approval violates the pipeline
 most work. After approval, forge runs **autonomously to done** (build → test suite → security →
 adversarial testing → final sweep), stopping only for a genuine clarity need (see SKILL.md `<autonomy>`).
 If the run mode in FORGE.md is **unattended**, present the plan for visibility and proceed without
-waiting — the user already chose a one-shot run.
+waiting — the user already chose a one-shot run. Build the user's stated UI preference, not any flagged
+departure (those wait for the final summary).
 
 On approval, update FORGE.md: check ③, Status → `build`, refresh Current position. → `phases/4-build.md`.
 
@@ -164,4 +165,5 @@ On approval, update FORGE.md: check ③, Status → `build`, refresh Current pos
 
 **Exit criteria:** PLAN.md written with right-sized, individually-verifiable steps within the step
 budget and a checkpoint per phase; TESTING.md written (acceptance matrix covering every criterion,
-strategy, draft charter); user approved (or the plan presented, in unattended mode); FORGE.md updated. → Proceed to `phases/4-build.md`.
+strategy, draft charter); user approved (or the plan presented, in unattended mode); FORGE.md updated. →
+Proceed to `phases/4-build.md`.

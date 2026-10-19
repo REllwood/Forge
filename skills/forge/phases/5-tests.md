@@ -54,7 +54,7 @@ real integration seams and the golden path end to end, and guards the risky logi
 6. **Record** in TESTING.md: the acceptance matrix (every criterion → test → passing), layers and tools,
    the one command, CI, and the two-run result.
 
-Update FORGE.md (check ⑤). → Proceed to `phases/6-security.md`.
+Update FORGE.md (check ⑤, Status → `security`). → Proceed to `phases/6-security.md`.
 
 **Exit criteria:** every success criterion has a passing acceptance test (or a recorded reason it's
 verified by observation instead, e.g. a purely visual judgement); integration tests and an end-to-end

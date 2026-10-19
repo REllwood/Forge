@@ -54,7 +54,7 @@ PROGRESS.md terse — without ever skipping a step's verification.
 ## Phase checkpoints — the heavy verification lives here
 
 When the last step of a plan phase is done, run its **Checkpoint** before starting the next phase:
-- Full compile / typecheck, lint / format, and the test suite (if any) — all clean.
+- Full compile / typecheck, lint / format, and the test suite — all clean.
 - **No regressions** — re-exercise what earlier phases delivered (the golden path so far).
 - **UI screens this phase completed:** verify them against the **UI Acceptance Checklist** in
   `references/standards.md` — actually resize to mobile (~375px) / tablet (~768px) / desktop
@@ -111,4 +111,4 @@ Honor the VCS decision recorded in SPEC:
 
 **Exit criteria:** every build step checked off in PLAN.md and logged in PROGRESS.md with a passing
 verify and its tests; every phase checkpoint passed; codebase in a working state. Update FORGE.md
-(check ④). → `phases/5-tests.md`.
+(check ④, Status → `tests`). → `phases/5-tests.md`.

@@ -67,7 +67,7 @@ test** — an exploit test that fails before the fix and passes after. Log each 
 Stay pragmatic: severity-gated, no chasing speculative issues, no looping past convergence. **Don't stop
 to ask** — surface anything left in the final summary.
 
-Update FORGE.md (check ⑥). → Proceed to `phases/7-adversarial.md`.
+Update FORGE.md (check ⑥, Status → `adversarial`). → Proceed to `phases/7-adversarial.md`.
 
 ```markdown
 # SECURITY — {title}

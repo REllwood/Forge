@@ -147,7 +147,7 @@ Forge runs eight phases and writes an artifact for each into a `.forge/` folder 
 
 1. **Interview** → settles version control and CI, then works through a question bank for your kind of project — purpose, testable success criteria, scope & non-goals, architecture, tech stack, data, integrations, UI/theme and edge-case behaviour — plus a defaults sheet, a build-readiness check and a pre-mortem, until there are no grey areas. → `SPEC.md`
 2. **Research & grounding** → verifies your stack and APIs against current sources; a hard gate surfaces *material* findings (deprecations, breaking changes, better options) before any planning. → `RESEARCH.md`
-2b. **UI Design** *(only if there's a UI)* → a platform-aware design team — UI specialist + staff frontend developer + UI artist — converges on the best modern UI **within your scope**; shown for sign-off at the plan gate. → `UI-DESIGN.md`
+   - **2b. UI Design** *(only if there's a UI)* → a platform-aware design team — UI specialist + staff frontend developer + UI artist — converges on the best modern UI **within your scope**; shown for sign-off at the plan gate. → `UI-DESIGN.md`
 3. **Plan** → decomposes the work into right-sized, individually-verifiable steps (within a step budget set by depth), each phase closed by a checkpoint, and maps every success criterion to the acceptance test that will prove it; you approve it (the one deliberate go/no-go — skipped if you chose unattended). → `PLAN.md` + `TESTING.md`
 4. **Build** → executes the steps in order, writing each step's tests as part of the step and **verifying every one** before moving on, with a full checkpoint (typecheck/lint/tests/regression; browser + accessibility for UI) at each phase boundary; commits per your chosen cadence. → `PROGRESS.md`
 5. **Test suite** → completes a full automated suite: an acceptance test for every success criterion, integration tests across the real seams, an end-to-end golden path, and edge cases where the risk is real. One command, no flaky tests, CI if you chose it. → `TESTING.md`
@@ -220,16 +220,16 @@ agents/
 dist/
   forge.md             # portable, single-file build for Codex/Cursor/other tools
 install.sh             # cross-tool installer
-README.md  LICENSE  CHANGELOG.md  CONTRIBUTING.md
+README.md  LICENSE  CHANGELOG.md
 ```
 
 ## Contributing
 
-Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). The one rule to remember: `skills/forge/` and `dist/forge.md` are two renderings of the same pipeline; keep them in sync.
+Issues and PRs welcome. The one rule to remember: `skills/forge/` and `dist/forge.md` are two renderings of the same pipeline; keep them in sync.
 
 ## Roadmap
 
-Deliberately not in v1 (easy to add): an optional **deploy** phase (Vercel/Netlify/Fly/Docker) and a **CI/CD** workflow + environment bootstrap.
+Deliberately not included yet (easy to add): an optional **deploy** phase (Vercel/Netlify/Fly/Docker) with continuous delivery, and environment bootstrap. (A CI workflow that runs lint, typecheck and the full suite is already offered at intake.)
 
 ## License
 

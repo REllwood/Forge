@@ -65,8 +65,9 @@ Batch related questions (up to four per call).
 
 Work from **`references/question-bank.md`**: the universal list, the section for this form factor, and
 the grey-area hotspots. It's your checklist, not a script — infer what you can, put a recommended default
-on the defaults sheet (§4) for the small things, and ask the user only what genuinely needs them. Follow up on any vague answer. **Offer concrete recommendations** rather than
-open-ended "what do you want?" — especially for tech and UI, where the user often wants you to propose.
+on the defaults sheet (§4) for the small things, and ask the user only what genuinely needs them. Follow
+up on any vague answer. **Offer concrete recommendations** rather than open-ended "what do you want?" —
+especially for tech and UI, where the user often wants you to propose.
 
 Stay agentic even here: **decide anything you can sensibly default or infer, and ask only what genuinely
 needs the user.** This is intake — the designated place to gather clarity — not an interrogation. The

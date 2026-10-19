@@ -43,8 +43,8 @@ real tree.
 Each attack is written as a test in the project's framework and run. Outcomes:
 - **Held** — the build rejected or handled it as the SPEC says. Commit the test; it's now a regression
   guard.
-- **Broke** — a crash, wrong result, data loss, leak, bypass, hang, or unbounded resource use. Commit the
-  test (red) and triage it.
+- **Broke** — a crash, wrong result, data loss, leak, bypass, hang, or unbounded resource use. Keep the
+  test and triage it.
 - **Mutant survived** — a test gap. Add the test that catches it.
 
 ## 3. Fix — the automated hardening loop
@@ -57,15 +57,20 @@ Each attack is written as a test in the project's framework and run. Outcomes:
   only the fix diff (`<loop_guards>` 6).
 - **Repeat** until a round produces no new in-scope break, or the level's round cap is hit. Then run the
   full suite once (twice, if anything was flaky) to close the phase.
-- Out-of-scope breaks (Medium/Low) are recorded, not chased.
+- **Deferred breaks** — out-of-scope ones (Medium/Low) and any still open at the round cap — are
+  recorded, not chased. Their attack tests are kept as **expected-failure** tests (the framework's
+  xfail/todo/skip-with-reason, naming the known-limitation entry), so the suite stays green and the gap
+  stays visible. This is the only sanctioned way a test may be marked not-passing, and every such marker
+  is listed as a known limitation in REVIEW.md.
 
 ## 4. Record in TESTING.md
 
 Fill the **Adversarial charter** table (category · targets · attacks · result), the **Mutation check**
 (mutant → caught by / survived → test added), and add a **Runs** line. Log fixes in PROGRESS.md.
 
-Update FORGE.md (check ⑦). → Proceed to `phases/8-final-sweep.md`.
+Update FORGE.md (check ⑦, Status → `final-sweep`). → Proceed to `phases/8-final-sweep.md`.
 
 **Exit criteria:** charter written for the hardening level; every attack committed as a permanent test;
-all in-scope breaks fixed with their attack tests green; surviving mutants closed with new tests; full
-suite green; TESTING.md updated; anything still open recorded with severity and reason.
+all in-scope breaks fixed with their attack tests green; deferred breaks kept as expected-failure tests
+tied to known limitations; surviving mutants closed with new tests; full suite green; TESTING.md updated;
+anything still open recorded with severity and reason.

@@ -133,7 +133,8 @@ with issues open, surface them as known limitations.
 1. Every SPEC success criterion is covered by a passing automated acceptance test (anything genuinely
    beyond automation, like a purely visual judgement, is verified by observation and noted).
 2. The full suite — unit, integration, end-to-end where the form factor has one, and the adversarial
-   tests — passes with one command, twice in a row (no flaky tests).
+   tests — passes with one command, twice in a row (no flaky tests). Deferred breaks are kept as
+   expected-failure tests tied to a known limitation, never deleted.
 3. Typecheck, lint and formatting are clean; the dependency audit has no unaddressed Critical/High.
 4. Every Critical/High finding from security, adversarial testing and the final sweep is fixed, each
    with a regression test.
@@ -208,7 +209,8 @@ the UI Acceptance Checklist** (see Standards), anchored to the user's references
 type:** throwaway HTML mockups (1–3 screens, in `.forge/ui-mockups/`) for visual-heavy apps; a written
 design direction for simpler UIs; spec-only in `economy`. The UI direction is **presented at the
 plan-approval gate** (no separate stop); flag any departure from the user's stated preference for
-sign-off. Honor scope — elevate within it, never override or gold-plate.
+sign-off (in `unattended` mode, build the stated preference and leave departures for the final summary).
+Honor scope — elevate within it, never override or gold-plate.
 
 ## ③ Plan → `PLAN.md` + `TESTING.md` (approval gate)
 Decompose into ordered phases → **right-sized steps** within the depth's step budget (see Loop guards).
@@ -292,8 +294,10 @@ hardening level, each with concrete targets and a handful of focused attacks:
 Write each attack as a test in the project's framework and run it. **Held** → keep it as a regression
 test. **Broke** → triage; fix in-scope breaks (Critical/High, plus Medium at `comprehensive`) at the root
 cause until the attack test passes — never weaken the attack test — then re-attack only the fix diff,
-under the Hardening round cap. Close with a full suite run. Record the charter, results and mutation
-check in `TESTING.md`.
+under the Hardening round cap. Deferred breaks (out of scope, or open at the cap) keep their attack test
+as an **expected-failure** test (xfail/todo, naming the known limitation) — the only sanctioned
+not-passing test — so the suite stays green and the gap stays visible. Close with a full suite run. Record
+the charter, results and mutation check in `TESTING.md`.
 
 ## ⑧ Final sweep → `REVIEW.md` + docs
 Fresh-context hunt for **bugs and logical errors**: wrong conditions/off-by-one/operator/defaults/units/
@@ -307,14 +311,15 @@ passes). Write `REVIEW.md`, then run the automated **hardening loop** (see Harde
 (plus Medium at `comprehensive`), each with a regression test → re-hunt only the changed code + re-run the
 affected tests/golden path → repeat until a clean re-check or the round cap, then one full run; record
 anything still open as known limitations. **Ship docs:** generate/refresh a clear README (what it is,
-setup, run, usage, config) and brief architecture notes. **Clean-room run:** clone or copy the repo into a
-fresh temp directory, follow the README literally (install, configure from `.env.example`, run the suite,
-start the app, walk the golden path); every failure or undocumented step is a finding — fix it. If CI was
-added and pushes are authorised, push and confirm it goes green (say so if you can't check). Walk the
-**Definition of done** item by item and record it in `REVIEW.md`. Mark `FORGE.md` → done and give a
-wrap-up: what was built and how to run it; how it was verified (test counts by layer, criteria covered,
-attacks run and what broke, security fixes, clean-room result, CI); the definition of done; known
-limitations; suggested next steps.
+setup, run, usage, config) and brief architecture notes. **Commit** the completed state (code, tests,
+docs). **Clean-room run:** clone that commit (or copy the tree, without git) into a fresh temp directory,
+follow the README literally (install, configure from `.env.example`, run the suite, start the app, walk
+the golden path); every failure or undocumented step is a finding — fix it and commit. Push the final
+commit per the authorised cadence; if CI was added, confirm it goes green on that commit (say so if you
+can't check). Walk the **Definition of done** item by item and record it in `REVIEW.md`. Mark `FORGE.md` →
+done and give a wrap-up: what was built and how to run it; how it was verified (test counts by layer,
+criteria covered, attacks run and what broke, security fixes, clean-room result, CI); the definition of
+done; known limitations; suggested next steps.
 
 ---
 
@@ -344,6 +349,11 @@ restrained palette, ≤2 fonts, purposeful motion) · **platform-fit**. The desi
 the build + final sweep check the built result against it and fix until it passes.
 
 ## Start
-Determine the idea from the command's argument or the current message. If `.forge/FORGE.md` exists and
-isn't `done`, announce the current phase and **resume** from it. Otherwise create `.forge/`, write an
-initial `FORGE.md`, and begin at ① Interview. Keep `FORGE.md` current throughout.
+Determine the idea from the command's argument or the current message. Commands: **`status`** — print
+FORGE.md's current position and phase ledger, then stop. **`resume`** (or no argument while a forge is in
+progress) — announce the current phase and continue from it. **`restart`** / **`abandon`** — confirm, then
+move the current `.forge/` contents to `.forge/archive/{slug}/`; restart then begins a new forge, abandon
+stops. **An idea** — if a forge is in progress, ask whether to resume it or archive it and start fresh;
+otherwise create `.forge/`, write an initial `FORGE.md`, and begin at ① Interview. Keep `FORGE.md`'s
+Status, ledger and current position accurate at every phase transition so a later session can resume
+cold.
